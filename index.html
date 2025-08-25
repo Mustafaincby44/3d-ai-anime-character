@@ -118,8 +118,7 @@
         // --- Mouth Animation Variables ---
         let targetMouthOpen = 0.0;
         let currentMouthOpen = 0.0;
-        let mouthAnimationSpeed = 0.15; // Daha yumuşak animasyon için
-        let isThinking = false; // Düşünme durumunu takip etmek için
+        let mouthAnimationSpeed = 0.15;
 
         // --- Model URLs ---
         const userModelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
@@ -212,15 +211,15 @@
             if (vrm && vrm.expressionManager) {
                 vrm.update(delta);
 
-                // Ağız animasyonu sadece konuşma sırasında ve düşünme sırasında değil
-                if (state === 'speaking' && analyser && !isThinking) {
-                    // Ses analizi - daha hassas ve doğal
+                // Ağız animasyonu sadece konuşma sırasında
+                if (state === 'speaking' && analyser) {
+                    // Ses analizi
                     analyser.getByteFrequencyData(audioDataArray);
                     
-                    // Sadece konuşma frekanslarını analiz et (85Hz - 255Hz)
+                    // Konuşma frekanslarını analiz et
                     let sum = 0;
                     let count = 0;
-                    for (let i = 3; i < 8; i++) { // 85Hz - 255Hz arası
+                    for (let i = 3; i < 8; i++) {
                         if (audioDataArray[i] > 0) {
                             sum += audioDataArray[i];
                             count++;
@@ -235,7 +234,7 @@
                         targetMouthOpen = 0.0;
                     }
                 } else {
-                    // Konuşma dışında veya düşünme sırasında ağız kapalı
+                    // Konuşma dışında ağız kapalı
                     targetMouthOpen = 0.0;
                 }
                 
@@ -302,8 +301,25 @@
             try {
                 const apiKey = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-                const payload = { model: "gemini-2.5-flash-preview-tts", contents: [{ parts: [{ text: text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Leda" } } } } };
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const payload = { 
+                    model: "gemini-2.5-flash-preview-tts", 
+                    contents: [{ parts: [{ text: text }] }], 
+                    generationConfig: { 
+                        responseModalities: ["AUDIO"], 
+                        speechConfig: { 
+                            voiceConfig: { 
+                                prebuiltVoiceConfig: { voiceName: "Leda" } 
+                            } 
+                        } 
+                    } 
+                };
+                
+                const response = await fetch(apiUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+                
                 if (!response.ok) throw new Error(`TTS API isteği başarısız: ${response.status}`);
                 const result = await response.json();
                 
@@ -338,7 +354,6 @@
                     // Konuşma bittiğinde ağızı kapat
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
-                    isThinking = false; // Düşünme durumunu sıfırla
                     if (vrm?.expressionManager) {
                         vrm.expressionManager.setValue('aa', 0);
                     }
@@ -378,13 +393,11 @@
                     updateStatus('Sıradaki mesajını bekliyorum.');
                     enableUI(true);
                     setEmotion('neutral');
-                    isThinking = false; // Düşünme durumunu sıfırla
                     stopCurrentSpeech();
                     break;
                 case 'thinking':
                     updateStatus('Düşünüyor...', true);
                     enableUI(false);
-                    isThinking = true; // Düşünme durumunu işaretle
                     // Düşünme sırasında ağızı kapat
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
