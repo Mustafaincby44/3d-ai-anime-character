@@ -119,6 +119,7 @@
         let targetMouthOpen = 0.0;
         let currentMouthOpen = 0.0;
         let mouthAnimationSpeed = 0.15; // Daha yumuşak animasyon için
+        let isThinking = false; // Düşünme durumunu takip etmek için
 
         // --- Model URLs ---
         const userModelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
@@ -211,8 +212,8 @@
             if (vrm && vrm.expressionManager) {
                 vrm.update(delta);
 
-                // Ağız animasyonu sadece konuşma sırasında
-                if (state === 'speaking' && analyser) {
+                // Ağız animasyonu sadece konuşma sırasında ve düşünme sırasında değil
+                if (state === 'speaking' && analyser && !isThinking) {
                     // Ses analizi - daha hassas ve doğal
                     analyser.getByteFrequencyData(audioDataArray);
                     
@@ -228,13 +229,13 @@
                     
                     if (count > 0) {
                         const average = sum / count;
-                        // Daha doğal ağız açılımı için sınırlama
-                        targetMouthOpen = Math.min(0.25, (average / 128.0) * 0.3);
+                        // Ağız açılımı 0.4 ile 0 arasında
+                        targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
                     } else {
                         targetMouthOpen = 0.0;
                     }
                 } else {
-                    // Konuşma dışında ağız kapalı
+                    // Konuşma dışında veya düşünme sırasında ağız kapalı
                     targetMouthOpen = 0.0;
                 }
                 
@@ -337,6 +338,7 @@
                     // Konuşma bittiğinde ağızı kapat
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
+                    isThinking = false; // Düşünme durumunu sıfırla
                     if (vrm?.expressionManager) {
                         vrm.expressionManager.setValue('aa', 0);
                     }
@@ -376,11 +378,13 @@
                     updateStatus('Sıradaki mesajını bekliyorum.');
                     enableUI(true);
                     setEmotion('neutral');
+                    isThinking = false; // Düşünme durumunu sıfırla
                     stopCurrentSpeech();
                     break;
                 case 'thinking':
                     updateStatus('Düşünüyor...', true);
                     enableUI(false);
+                    isThinking = true; // Düşünme durumunu işaretle
                     // Düşünme sırasında ağızı kapat
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
