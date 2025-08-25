@@ -168,8 +168,8 @@ function animate() {
 function updateMouthAnimation() {
     if (!vrm?.expressionManager) return;
     
-    // ONLY animate mouth when speaking
-    if (appState === 'speaking' && isSpeaking) {
+    // STRICT mouth control - only open when actually speaking
+    if (appState === 'speaking' && isSpeaking && (analyser || currentAudioSource)) {
         if (analyser && audioDataArray) {
             // Real audio analysis
             analyser.getByteFrequencyData(audioDataArray);
@@ -194,15 +194,20 @@ function updateMouthAnimation() {
             targetMouthOpen = 0.1 + (Math.sin(Date.now() * 0.01) * 0.3);
         }
     } else {
-        // Mouth closed when not speaking
+        // Force mouth closed in all other states
         targetMouthOpen = 0.0;
     }
     
     // Smooth mouth animation
     mouthOpenValue = THREE.MathUtils.lerp(mouthOpenValue, targetMouthOpen, mouthAnimationSpeed);
     
-    // Apply to VRM
+    // Apply to VRM and ensure it's actually closed
     vrm.expressionManager.setValue('aa', mouthOpenValue);
+    
+    // Double-check: if not speaking, force mouth closed
+    if (!isSpeaking || appState !== 'speaking') {
+        vrm.expressionManager.setValue('aa', 0);
+    }
 }
 
 // ===== USER INTERACTION =====
@@ -347,23 +352,42 @@ function playAudio(audioBuffer) {
     // Start audio
     source.start(0);
     
-    // Handle audio end
+    // Handle audio end with timeout protection
     source.onended = () => {
-        stopSpeech();
+        console.log('Audio ended naturally');
+        setTimeout(() => {
+            if (isSpeaking) {
+                console.log('Forcing speech stop after audio end');
+                stopSpeech();
+            }
+        }, 100); // Small delay to ensure cleanup
     };
+    
+    // Add timeout protection in case onended doesn't fire
+    const audioDuration = audioBuffer.duration * 1000; // Convert to milliseconds
+    setTimeout(() => {
+        if (isSpeaking && currentAudioSource === source) {
+            console.log('Audio timeout reached, forcing stop');
+            stopSpeech();
+        }
+    }, audioDuration + 1000); // Add 1 second buffer
 }
 
 function simulateSpeech(text) {
     const wordCount = text.split(' ').length;
     const duration = (wordCount / 150) * 60 * 1000; // 150 words per minute
     
+    console.log(`Simulating speech for ${duration}ms`);
+    
     let startTime = Date.now();
-    const interval = setInterval(() => {
+    let interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
         const progress = elapsed / duration;
         
         if (progress >= 1) {
             clearInterval(interval);
+            interval = null;
+            console.log('Simulated speech completed');
             stopSpeech();
             return;
         }
@@ -371,52 +395,93 @@ function simulateSpeech(text) {
         // Simulate mouth movement
         targetMouthOpen = 0.1 + (Math.sin(progress * Math.PI * 8) * 0.3);
     }, 50);
+    
+    // Add timeout protection
+    setTimeout(() => {
+        if (interval) {
+            console.log('Simulated speech timeout, forcing stop');
+            clearInterval(interval);
+            interval = null;
+            stopSpeech();
+        }
+    }, duration + 2000); // Add 2 second buffer
 }
 
 function stopSpeech() {
+    console.log('Stopping speech...');
+    
+    // Reset all speech flags
     isSpeaking = false;
     targetMouthOpen = 0.0;
     mouthOpenValue = 0.0;
     
+    // Stop and cleanup audio source
     if (currentAudioSource) {
-        currentAudioSource.stop();
-        currentAudioSource.disconnect();
+        try {
+            currentAudioSource.onended = null; // Remove event listener
+            currentAudioSource.stop();
+            currentAudioSource.disconnect();
+        } catch (error) {
+            console.error('Error stopping audio source:', error);
+        }
         currentAudioSource = null;
     }
     
+    // Cleanup analyser
     if (analyser) {
-        analyser.disconnect();
+        try {
+            analyser.disconnect();
+        } catch (error) {
+            console.error('Error disconnecting analyser:', error);
+        }
         analyser = null;
         audioDataArray = null;
     }
     
+    // Force mouth closed
     if (vrm?.expressionManager) {
         vrm.expressionManager.setValue('aa', 0);
     }
     
+    // Update state
     setAppState('idle');
+    
+    console.log('Speech stopped, state reset to idle');
 }
 
 // ===== UTILITY FUNCTIONS =====
 function setAppState(newState) {
+    console.log(`State change: ${appState} -> ${newState}`);
     appState = newState;
     
     switch (newState) {
         case 'loading':
             updateStatus('Sahne hazırlanıyor...');
             enableUI(false);
+            // Force mouth closed during loading
+            if (vrm?.expressionManager) {
+                vrm.expressionManager.setValue('aa', 0);
+            }
             break;
         case 'idle':
             updateStatus('Sıradaki mesajını bekliyorum.');
             enableUI(true);
             isThinking = false;
             isSpeaking = false;
+            // Force mouth closed in idle
+            if (vrm?.expressionManager) {
+                vrm.expressionManager.setValue('aa', 0);
+            }
             break;
         case 'thinking':
             updateStatus('Düşünüyor...', true);
             enableUI(false);
             isThinking = true;
             isSpeaking = false;
+            // Force mouth closed while thinking
+            if (vrm?.expressionManager) {
+                vrm.expressionManager.setValue('aa', 0);
+            }
             break;
         case 'speaking':
             updateStatus('Konuşuyor...');
@@ -427,6 +492,10 @@ function setAppState(newState) {
         case 'error':
             updateStatus('Bir hata oluştu.');
             enableUI(true);
+            // Force mouth closed on error
+            if (vrm?.expressionManager) {
+                vrm.expressionManager.setValue('aa', 0);
+            }
             break;
     }
 }
