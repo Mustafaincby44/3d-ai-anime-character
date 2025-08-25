@@ -89,9 +89,9 @@ Bu proje MIT lisansı altında lisanslanmıştır.
 
 ## 📞 İletişim
 
-Proje Sahibi - [@kullaniciadi](https://github.com/kullaniciadi)
+Proje Sahibi - [@Mustafaincby44](https://github.com/Mustafaincby44)
 
-Proje Linki: [https://github.com/kullaniciadi/3d-ai-anime-character](https://github.com/kullaniciadi/3d-ai-anime-character)
+Proje Linki: [https://github.com/Mustafaincby44/3d-ai-anime-character](https://github.com/Mustafaincby44/3d-ai-anime-character)
 
 ## 🙏 Teşekkürler
 
