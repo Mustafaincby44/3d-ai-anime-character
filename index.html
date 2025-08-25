@@ -323,10 +323,15 @@
                 if (!response.ok) throw new Error(`TTS API isteği başarısız: ${response.status}`);
                 const result = await response.json();
                 
+                // TTS API hatası kontrolü
                 if (!result.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
                     const finishReason = result.candidates?.[0]?.finishReason;
                     console.error(`TTS Yanıtı Hatalı. Sebep: ${finishReason || 'Bilinmiyor'}`, JSON.stringify(result, null, 2));
-                    throw new Error("TTS API'sinden geçersiz veya hatalı yanıt alındı.");
+                    
+                    // TTS hatası durumunda sadece ağız animasyonu ile konuşma simülasyonu
+                    console.log("TTS hatası, ağız animasyonu ile konuşma simüle ediliyor...");
+                    simulateSpeechWithMouthAnimation(text);
+                    return;
                 }
 
                 const audioPart = result.candidates[0].content.parts[0];
@@ -361,8 +366,42 @@
                 };
             } catch (error) {
                 console.error("TTS Hatası:", error);
-                setState('error');
+                // Hata durumunda ağız animasyonu ile konuşma simülasyonu
+                simulateSpeechWithMouthAnimation(text);
             }
+        }
+        
+        // TTS hatası durumunda ağız animasyonu ile konuşma simülasyonu
+        function simulateSpeechWithMouthAnimation(text) {
+            setState('speaking');
+            updateStatus('Konuşuyor... (ses olmadan)');
+            
+            // Metin uzunluğuna göre konuşma süresi hesapla (ortalama 150 kelime/dakika)
+            const wordCount = text.split(' ').length;
+            const speechDuration = (wordCount / 150) * 60 * 1000; // milisaniye
+            
+            // Ağız animasyonu için ses analizi simülasyonu
+            let startTime = Date.now();
+            let animationInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / speechDuration;
+                
+                if (progress >= 1) {
+                    // Konuşma bitti
+                    clearInterval(animationInterval);
+                    targetMouthOpen = 0.0;
+                    currentMouthOpen = 0.0;
+                    if (vrm?.expressionManager) {
+                        vrm.expressionManager.setValue('aa', 0);
+                    }
+                    setState('idle');
+                    return;
+                }
+                
+                // Ağız açılımını simüle et (0.1 ile 0.4 arasında)
+                const mouthOpenValue = 0.1 + (Math.sin(progress * Math.PI * 8) * 0.3);
+                targetMouthOpen = mouthOpenValue;
+            }, 50); // 50ms aralıklarla güncelle
         }
         
         function stopCurrentSpeech() {
