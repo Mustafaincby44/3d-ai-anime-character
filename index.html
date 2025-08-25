@@ -119,6 +119,7 @@
         let targetMouthOpen = 0.0;
         let currentMouthOpen = 0.0;
         let mouthAnimationSpeed = 0.15;
+        let isSimulatingSpeech = false; // Fallback konuşma simülasyonu için
 
         // --- Model URLs ---
         const userModelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
@@ -211,27 +212,32 @@
             if (vrm && vrm.expressionManager) {
                 vrm.update(delta);
 
-                // Ağız animasyonu sadece konuşma sırasında
-                if (state === 'speaking' && analyser) {
-                    // Ses analizi
-                    analyser.getByteFrequencyData(audioDataArray);
-                    
-                    // Konuşma frekanslarını analiz et
-                    let sum = 0;
-                    let count = 0;
-                    for (let i = 3; i < 8; i++) {
-                        if (audioDataArray[i] > 0) {
-                            sum += audioDataArray[i];
-                            count++;
+                // Ağız animasyonu - konuşma sırasında veya simülasyon sırasında
+                if (state === 'speaking') {
+                    if (analyser && !isSimulatingSpeech) {
+                        // Gerçek ses analizi
+                        analyser.getByteFrequencyData(audioDataArray);
+                        
+                        // Konuşma frekanslarını analiz et
+                        let sum = 0;
+                        let count = 0;
+                        for (let i = 3; i < 8; i++) {
+                            if (audioDataArray[i] > 0) {
+                                sum += audioDataArray[i];
+                                count++;
+                            }
                         }
-                    }
-                    
-                    if (count > 0) {
-                        const average = sum / count;
-                        // Ağız açılımı 0.4 ile 0 arasında
-                        targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
-                    } else {
-                        targetMouthOpen = 0.0;
+                        
+                        if (count > 0) {
+                            const average = sum / count;
+                            // Ağız açılımı 0.4 ile 0 arasında
+                            targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
+                        } else {
+                            targetMouthOpen = 0.0;
+                        }
+                    } else if (isSimulatingSpeech) {
+                        // Fallback konuşma simülasyonu - ağız zaten targetMouthOpen ile ayarlanıyor
+                        // Burada bir şey yapmaya gerek yok, simulateSpeechWithMouthAnimation zaten ayarlıyor
                     }
                 } else {
                     // Konuşma dışında ağız kapalı
@@ -359,6 +365,7 @@
                     // Konuşma bittiğinde ağızı kapat
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
+                    isSimulatingSpeech = false;
                     if (vrm?.expressionManager) {
                         vrm.expressionManager.setValue('aa', 0);
                     }
@@ -375,6 +382,7 @@
         function simulateSpeechWithMouthAnimation(text) {
             setState('speaking');
             updateStatus('Konuşuyor... (ses olmadan)');
+            isSimulatingSpeech = true;
             
             // Metin uzunluğuna göre konuşma süresi hesapla (ortalama 150 kelime/dakika)
             const wordCount = text.split(' ').length;
@@ -391,6 +399,7 @@
                     clearInterval(animationInterval);
                     targetMouthOpen = 0.0;
                     currentMouthOpen = 0.0;
+                    isSimulatingSpeech = false;
                     if (vrm?.expressionManager) {
                         vrm.expressionManager.setValue('aa', 0);
                     }
@@ -415,6 +424,7 @@
             // Ağız animasyonunu sıfırla
             targetMouthOpen = 0.0;
             currentMouthOpen = 0.0;
+            isSimulatingSpeech = false;
         }
 
         function setState(newState) {
