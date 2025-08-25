@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeniden Yazılmış AI Anime Karakter</title>
+    <title>3D AI Anime chatbot </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -270,7 +270,7 @@
         }
 
         async function getAIResponse(prompt) {
-            const apiKey = ""; // API key is handled by the environment.
+            const apiKey = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const requestBody = {
                 contents: [{ parts: [{ text: `Sen sevimli, zeki ve biraz utangaç bir anime karakterisin. Kullanıcının mesajına her zaman en az 3 kelimeden oluşan, sevimli ve kişiliğine uygun kısa bir cümle ile cevap ver. Asla tek kelimelik veya boş cevap verme. Cevabının genel duygusunu da 'happy' veya 'sad' kelimelerinden biriyle belirt. Cevabını JSON formatında şu şekilde ver: {"cevap": "...", "duygu": "..."}. Kullanıcının sözü: "${prompt}"` }] }]
@@ -299,7 +299,7 @@
             }
             
             try {
-                const apiKey = ""; // API key is handled by the environment.
+                const apiKey = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
                 const payload = { model: "gemini-2.5-flash-preview-tts", contents: [{ parts: [{ text: text }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Leda" } } } } };
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
