@@ -24,6 +24,10 @@ let isSpeaking = false;
 let volumeLevel = 0.7; // 70% default
 let autoTalkEnabled = false; // Default OFF
 
+// System readiness tracking
+let systemReady = false;
+let messageCount = 0;
+
 // Audio System
 let audioContext = null;
 let analyser = null;
@@ -249,12 +253,66 @@ function updateMouthAnimation() {
     }
 }
 
+// ===== SYSTEM RESET FUNCTIONS =====
+function resetMouthState() {
+    console.log('🔄 Resetting mouth state');
+    mouthOpenValue = 0.0;
+    targetMouthOpen = 0.0;
+    
+    if (vrm?.expressionManager) {
+        vrm.expressionManager.setValue('aa', 0);
+    }
+    
+    // Reset audio analysis
+    if (analyser) {
+        try {
+            analyser.disconnect();
+        } catch (e) {
+            // Ignore disconnect errors
+        }
+        analyser = null;
+        audioDataArray = null;
+    }
+    
+    // Reset audio source
+    if (currentAudioSource) {
+        try {
+            currentAudioSource.onended = null;
+            currentAudioSource.stop();
+            currentAudioSource.disconnect();
+        } catch (e) {
+            // Ignore stop errors
+        }
+        currentAudioSource = null;
+    }
+}
+
+function resetSystemState() {
+    console.log('🔄 Full system reset');
+    isThinking = false;
+    isSpeaking = false;
+    resetMouthState();
+    setAppState('idle');
+}
+
 // ===== USER INTERACTION =====
 async function handleUserInput() {
     const text = userInput.value.trim();
     if (!text || appState === 'thinking' || appState === 'speaking') return;
     
+    // Don't process if system not ready
+    if (!systemReady) {
+        console.log('⚠️ System not ready yet, ignoring input');
+        return;
+    }
+    
     userInput.value = '';
+    messageCount++;
+    console.log(`📨 Processing message #${messageCount}: "${text}"`);
+    
+    // Reset mouth state before starting
+    resetMouthState();
+    
     setAppState('thinking');
     
     try {
@@ -275,9 +333,17 @@ async function handleUserInput() {
         await speakText(response.cevap);
         
     } catch (error) {
-        console.error('Interaction failed:', error);
+        console.error('❌ Interaction failed:', error);
+        console.log('🔄 Forcing system reset due to error');
+        
+        // Force reset everything on error
+        resetSystemState();
+        
+        // Show error briefly then reset
         setAppState('error');
-        setTimeout(() => setAppState('idle'), 2000);
+        setTimeout(() => {
+            resetSystemState();
+        }, 1000);
     }
 }
 
@@ -467,54 +533,20 @@ function simulateSpeech(text) {
 }
 
 function stopSpeech() {
-    console.log('Stopping speech...');
+    console.log('🛑 Stopping speech...');
     
     // Reset all speech flags immediately
     isSpeaking = false;
     targetMouthOpen = 0.0;
     mouthOpenValue = 0.0;
     
-    // Stop and cleanup audio source
-    if (currentAudioSource) {
-        try {
-            currentAudioSource.onended = null; // Remove event listener
-            currentAudioSource.stop();
-            currentAudioSource.disconnect();
-        } catch (error) {
-            console.error('Error stopping audio source:', error);
-        }
-        currentAudioSource = null;
-    }
-    
-    // Cleanup analyser
-    if (analyser) {
-        try {
-            analyser.disconnect();
-        } catch (error) {
-            console.error('Error disconnecting analyser:', error);
-        }
-        analyser = null;
-        audioDataArray = null;
-    }
-    
-    // Force mouth closed immediately and ensure it stays closed
-    if (vrm?.expressionManager) {
-        vrm.expressionManager.setValue('aa', 0);
-        console.log('Mouth forced closed');
-    }
+    // Use the centralized reset function
+    resetMouthState();
     
     // Update state
     setAppState('idle');
     
-    // Simple immediate mouth closure
-    if (vrm?.expressionManager) {
-        vrm.expressionManager.setValue('aa', 0);
-        mouthOpenValue = 0.0;
-        targetMouthOpen = 0.0;
-        console.log('🔧 Mouth closed immediately');
-    }
-    
-    console.log('Speech stopped, state reset to idle');
+    console.log('✅ Speech stopped, system clean');
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -524,6 +556,12 @@ function setAppState(newState) {
     
     // Update global state for brain system
     window.appState = newState;
+    
+    // Mark system as ready when first time reaching idle
+    if (newState === 'idle' && !systemReady) {
+        systemReady = true;
+        console.log('🚀 System marked as ready');
+    }
     
     switch (newState) {
         case 'loading':
@@ -702,27 +740,19 @@ async function handleBrainSelfTalk(thought, trigger) {
         // Speak the thought with proper cleanup
         await speakText(thought.text);
         
-        // Ensure mouth is closed after speaking
+        // Reset mouth state after self-talk
         setTimeout(() => {
-            if (vrm?.expressionManager && appState === 'idle') {
-                vrm.expressionManager.setValue('aa', 0);
-                mouthOpenValue = 0.0;
-                targetMouthOpen = 0.0;
-                console.log('🔧 Force closed mouth after self-talk');
+            if (appState === 'idle') {
+                resetMouthState();
+                console.log('🔧 Reset mouth after self-talk');
             }
-        }, 500);
+        }, 200);
         
         console.log(`✅ Self-talk completed: ${thought.type}`);
         
     } catch (error) {
         console.error('❌ Self-talk failed:', error);
-        setAppState('idle');
-        // Force mouth closed on error
-        if (vrm?.expressionManager) {
-            vrm.expressionManager.setValue('aa', 0);
-            mouthOpenValue = 0.0;
-            targetMouthOpen = 0.0;
-        }
+        resetSystemState();
     }
 }
 
