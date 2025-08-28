@@ -216,30 +216,30 @@ function updateMouthAnimation() {
             if (count > 0) {
                 const average = sum / count;
                 
-                // Audio calibration for first few messages
+                // Audio calibration for first few messages - prevent screaming but allow normal movement
                 if (!audioCalibrated) {
                     audioBaselineSum += average;
                     audioCalibrationCount++;
                     
-                    if (audioCalibrationCount >= 5) { // Increase to 5 messages
+                    if (audioCalibrationCount >= 3) { // Back to 3 messages
                         const baseline = audioBaselineSum / audioCalibrationCount;
                         console.log(`🎯 Audio calibrated! Baseline: ${baseline.toFixed(2)}`);
                         audioCalibrated = true;
                     }
                     
-                    // EXTREMELY conservative during calibration - almost closed
-                    targetMouthOpen = Math.min(0.03, (average / 300.0) * 0.08);
-                    console.log(`🔧 Calibration ${audioCalibrationCount}/5: mouth=${targetMouthOpen.toFixed(3)}`);
+                    // Normal movement but prevent extreme values during calibration
+                    targetMouthOpen = Math.min(0.25, (average / 140.0) * 0.45);
+                    console.log(`🔧 Calibration ${audioCalibrationCount}/3: mouth=${targetMouthOpen.toFixed(3)}`);
                 } else {
-                    // Normal operation after calibration - still conservative
-                    targetMouthOpen = Math.min(0.2, (average / 150.0) * 0.3);
+                    // Normal operation after calibration
+                    targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
                 }
             } else {
                 targetMouthOpen = 0.0;
             }
         } else {
-            // Fallback animation when no audio - reduced intensity
-            targetMouthOpen = 0.05 + (Math.sin(Date.now() * 0.008) * 0.15);
+            // Fallback animation when no audio - normal for all cases
+            targetMouthOpen = 0.1 + (Math.sin(Date.now() * 0.01) * 0.2);
         }
     } else {
         // Force mouth closed in all other states
@@ -265,10 +265,7 @@ function updateMouthAnimation() {
         mouthOpenValue = 0.0;
         targetMouthOpen = 0.0;
         
-        // Extra aggressive closure for first few messages if not calibrated
-        if (!audioCalibrated) {
-            vrm.expressionManager.setValue('aa', 0);
-        }
+        // Natural closure - no extra aggressive behavior needed
     }
 }
 
