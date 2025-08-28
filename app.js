@@ -20,6 +20,10 @@ let appState = 'loading'; // loading, idle, thinking, speaking
 let isThinking = false;
 let isSpeaking = false;
 
+// Settings
+let volumeLevel = 0.7; // 70% default
+let autoTalkEnabled = false; // Default OFF
+
 // Audio System
 let audioContext = null;
 let analyser = null;
@@ -30,6 +34,11 @@ let currentAudioSource = null;
 let mouthOpenValue = 0.0;
 let targetMouthOpen = 0.0;
 let mouthAnimationSpeed = 0.15;
+
+// Audio calibration - prevent initial screaming
+let audioCalibrated = false;
+let audioCalibrationCount = 0;
+let audioBaselineSum = 0;
 
 // Model URLs
 const modelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
@@ -89,6 +98,9 @@ function init() {
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') handleUserInput();
     });
+    
+    // Settings event listeners
+    initializeSettings();
 }
 
 function createParticles() {
@@ -189,7 +201,7 @@ function updateMouthAnimation() {
     // STRICT mouth control - only open when actually speaking
     if (appState === 'speaking' && isSpeaking && (analyser || currentAudioSource)) {
         if (analyser && audioDataArray) {
-            // Real audio analysis
+            // Real audio analysis with calibration
             analyser.getByteFrequencyData(audioDataArray);
             
             let sum = 0;
@@ -203,8 +215,24 @@ function updateMouthAnimation() {
             
             if (count > 0) {
                 const average = sum / count;
-                // Reduced intensity - prevent screaming mouth
-                targetMouthOpen = Math.min(0.25, (average / 128.0) * 0.35);
+                
+                // Audio calibration for first few messages
+                if (!audioCalibrated) {
+                    audioBaselineSum += average;
+                    audioCalibrationCount++;
+                    
+                    if (audioCalibrationCount >= 3) {
+                        const baseline = audioBaselineSum / audioCalibrationCount;
+                        console.log(`🎯 Audio calibrated! Baseline: ${baseline.toFixed(2)}`);
+                        audioCalibrated = true;
+                    }
+                    
+                    // Very conservative opening during calibration
+                    targetMouthOpen = Math.min(0.08, (average / 200.0) * 0.15);
+                } else {
+                    // Normal operation after calibration
+                    targetMouthOpen = Math.min(0.25, (average / 128.0) * 0.35);
+                }
             } else {
                 targetMouthOpen = 0.0;
             }
@@ -379,9 +407,12 @@ function playAudio(audioBuffer) {
         });
     }
     
+    // Apply volume adjustment
+    const adjustedBuffer = applyVolumeToAudio(audioBuffer);
+    
     // Create audio source
     const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
+    source.buffer = adjustedBuffer;
     currentAudioSource = source;
     
     // Create analyser for mouth animation
@@ -665,8 +696,15 @@ function initializeBrainSystem() {
         }
     );
 
-    // Initialize brain system
+    // Initialize brain system (auto-talk OFF by default)
     window.brainSystem.initialize();
+    
+    // Auto-talk starts OFF - user must enable in settings
+    if (window.brainSystem.selfTalkManager) {
+        window.brainSystem.selfTalkManager.stop();
+        console.log('🤐 Auto-talk disabled by default - enable in settings');
+    }
+    
     console.log('🧠 Brain system integrated with app.js!');
 }
 
@@ -759,6 +797,100 @@ async function getAIResponseWithBrain(userMessage) {
 
     const text = result.candidates[0].content.parts[0].text;
     return JSON.parse(text.replaceAll("```json", "").replaceAll("```", "").trim());
+}
+
+// ===== SETTINGS MANAGEMENT =====
+function initializeSettings() {
+    // Get elements
+    const settingsBtn = document.getElementById('settings-button');
+    const settingsPanel = document.getElementById('settings-panel');
+    const closeBtn = document.getElementById('close-settings');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    const autoTalkToggle = document.getElementById('auto-talk-toggle');
+    
+    if (!settingsBtn || !settingsPanel) {
+        console.error('❌ Settings elements not found');
+        return;
+    }
+    
+    // Settings button click
+    settingsBtn.addEventListener('click', () => {
+        settingsPanel.classList.toggle('hidden');
+    });
+    
+    // Close button click
+    closeBtn?.addEventListener('click', () => {
+        settingsPanel.classList.add('hidden');
+    });
+    
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+        if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
+            settingsPanel.classList.add('hidden');
+        }
+    });
+    
+    // Volume slider
+    if (volumeSlider && volumeValue) {
+        volumeSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            volumeLevel = value / 100; // Convert to 0-1
+            volumeValue.textContent = `${value}%`;
+            
+            // Apply volume to current audio
+            if (audioContext && currentAudioSource) {
+                // Note: Web Audio API doesn't have direct volume control on source
+                // Volume is applied during audio creation
+            }
+            
+            console.log(`🔊 Volume set to ${value}%`);
+        });
+    }
+    
+    // Auto talk toggle
+    if (autoTalkToggle) {
+        autoTalkToggle.addEventListener('change', (e) => {
+            autoTalkEnabled = e.target.checked;
+            
+            if (window.brainSystem?.selfTalkManager) {
+                if (autoTalkEnabled) {
+                    window.brainSystem.selfTalkManager.start();
+                    console.log('🗣️ Auto talk ENABLED');
+                } else {
+                    window.brainSystem.selfTalkManager.stop();
+                    console.log('🤐 Auto talk DISABLED');
+                }
+            }
+            
+            console.log(`🤖 Auto talk: ${autoTalkEnabled ? 'ON' : 'OFF'}`);
+        });
+    }
+    
+    console.log('⚙️ Settings initialized');
+}
+
+// Apply volume to audio buffer
+function applyVolumeToAudio(audioBuffer) {
+    if (!audioBuffer || volumeLevel === 1.0) return audioBuffer;
+    
+    // Create a new buffer with adjusted volume
+    const adjustedBuffer = audioContext.createBuffer(
+        audioBuffer.numberOfChannels,
+        audioBuffer.length,
+        audioBuffer.sampleRate
+    );
+    
+    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        const originalData = audioBuffer.getChannelData(channel);
+        const adjustedData = adjustedBuffer.getChannelData(channel);
+        
+        for (let i = 0; i < originalData.length; i++) {
+            adjustedData[i] = originalData[i] * volumeLevel;
+        }
+    }
+    
+    return adjustedBuffer;
 }
 
 // ===== START APPLICATION =====
