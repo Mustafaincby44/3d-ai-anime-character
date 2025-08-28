@@ -703,7 +703,7 @@ async function speakText(text) {
     isSpeaking = true;
     
     try {
-        // Try TTS first
+        // Try Gemini TTS first
         console.log('🎵 Attempting Gemini TTS generation...');
         const audioBuffer = await generateTTS(text);
         if (audioBuffer) {
