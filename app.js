@@ -125,6 +125,36 @@ let analyser = null;
 let audioDataArray = null;
 let currentAudioSource = null;
 
+// NEW: Audio analysis functions for WAV playback
+function startAudioAnalysis() {
+    if (!audioContext) return;
+    
+    try {
+        // Create analyser for mouth animation
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        audioDataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        console.log('🎵 Audio analysis started for mouth animation');
+        
+    } catch (error) {
+        console.error('❌ Failed to start audio analysis:', error);
+    }
+}
+
+function stopAudioAnalysis() {
+    if (analyser) {
+        try {
+            analyser.disconnect();
+            analyser = null;
+            audioDataArray = null;
+            console.log('🎵 Audio analysis stopped');
+        } catch (error) {
+            console.error('❌ Error stopping audio analysis:', error);
+        }
+    }
+}
+
 // WAV Conversion Function
 async function audioBufferToWav(audioBuffer) {
     const numChannels = audioBuffer.numberOfChannels;
@@ -994,10 +1024,17 @@ function playWavFile(wavUrl) {
         console.log('🎵 WAV file playback started');
         
         // Set up audio analysis for mouth animation
-        const analyser = audioContext.createAnalyser();
-        const source = audioContext.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(audioContext.destination);
+        if (audioContext && analyser) {
+            try {
+                const source = audioContext.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                console.log('🎵 Audio analysis connected for mouth animation');
+            } catch (error) {
+                console.warn('⚠️ Could not connect audio analysis:', error);
+            }
+        }
         
         // Store current audio source
         currentAudioSource = audio;
