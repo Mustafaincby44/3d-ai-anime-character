@@ -394,12 +394,21 @@ async function speakText(text) {
         }
     } catch (error) {
         console.error('TTS failed, using fallback:', error);
-        // If TTS fails, stop speaking state and return to idle
-        stopSpeech();
+        
+        // Check if it's a rate limit error (429)
+        if (error.message.includes('429')) {
+            console.log('🚫 API rate limit exceeded - using text simulation');
+            updateStatus('API limit aşıldı - metin simülasyonu kullanılıyor...');
+        }
+        
+        // Don't stop speech - use fallback instead
+        console.log('🎭 Using simulated speech for:', text);
+        simulateSpeech(text);
         return;
     }
     
     // Fallback: simulate speech without audio
+    console.log('🎭 No audio available - using simulated speech');
     simulateSpeech(text);
 }
 
@@ -500,9 +509,10 @@ function playAudio(audioBuffer) {
 
 function simulateSpeech(text) {
     const wordCount = text.split(' ').length;
-    const duration = (wordCount / 150) * 60 * 1000; // 150 words per minute
+    const duration = Math.max(2000, (wordCount / 150) * 60 * 1000); // Min 2 seconds, 150 wpm
     
-    console.log(`Simulating speech for ${duration}ms`);
+    console.log(`🎭 Simulating speech: "${text}" for ${duration}ms`);
+    updateStatus(`Konuşuyor: "${text}"`);
     
     let startTime = Date.now();
     let interval = setInterval(() => {
@@ -512,24 +522,32 @@ function simulateSpeech(text) {
         if (progress >= 1) {
             clearInterval(interval);
             interval = null;
-            console.log('Simulated speech completed');
+            console.log('✅ Simulated speech completed');
             stopSpeech();
             return;
         }
         
-        // Simulate mouth movement
-        targetMouthOpen = 0.1 + (Math.sin(progress * Math.PI * 8) * 0.3);
+        // Better simulate mouth movement with text rhythm
+        const wordPhase = (progress * wordCount) % 1;
+        const mouthIntensity = 0.1 + (Math.sin(wordPhase * Math.PI * 2) * 0.15);
+        targetMouthOpen = mouthIntensity;
+        
+        // Update status with progress
+        const progressPercent = Math.round(progress * 100);
+        if (progressPercent % 20 === 0) { // Update every 20%
+            updateStatus(`Konuşuyor... ${progressPercent}%`);
+        }
     }, 50);
     
     // Add timeout protection
     setTimeout(() => {
         if (interval) {
-            console.log('Simulated speech timeout, forcing stop');
+            console.log('⏰ Simulated speech timeout, forcing stop');
             clearInterval(interval);
             interval = null;
             stopSpeech();
         }
-    }, duration + 2000); // Add 2 second buffer
+    }, duration + 1000); // Add 1 second buffer
 }
 
 function stopSpeech() {
