@@ -831,8 +831,8 @@ async function generateTTS(text) {
             body: JSON.stringify(payload)
         });
         
-        // Track TTS usage from response headers
-        trackAPIUsage('tts', response);
+        // Track TTS usage from response headers (don't double count)
+        // trackAPIUsage('tts', response); // Commented out to prevent double counting
 
         console.log('🎵 Gemini TTS Response status:', response.status);
 
