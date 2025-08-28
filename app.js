@@ -125,8 +125,9 @@ let analyser = null;
 let audioDataArray = null;
 let currentAudioSource = null;
 
-// NEW: Audio analysis functions for WAV playback
-function startAudioAnalysis() {
+// ===== AUDIO ANALYSIS FUNCTIONS =====
+// Global audio analysis functions for WAV playback
+window.startAudioAnalysis = function() {
     if (!audioContext) return;
     
     try {
@@ -140,9 +141,9 @@ function startAudioAnalysis() {
     } catch (error) {
         console.error('❌ Failed to start audio analysis:', error);
     }
-}
+};
 
-function stopAudioAnalysis() {
+window.stopAudioAnalysis = function() {
     if (analyser) {
         try {
             analyser.disconnect();
@@ -153,7 +154,7 @@ function stopAudioAnalysis() {
             console.error('❌ Error stopping audio analysis:', error);
         }
     }
-}
+};
 
 // WAV Conversion Function
 async function audioBufferToWav(audioBuffer) {
