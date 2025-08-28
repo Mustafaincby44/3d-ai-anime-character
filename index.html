@@ -42,15 +42,31 @@
         </div>
         
         <div class="settings-content">
-            <!-- API Key Input -->
+            <!-- Response API Key Input -->
             <div class="setting-item">
-                <label for="api-key-input">Google AI Studio API Key</label>
+                <label for="response-api-key-input">Response API Key (Gemini)</label>
                 <div class="api-key-container">
-                    <input type="password" id="api-key-input" placeholder="API key'inizi buraya girin..." class="api-key-input">
-                    <button id="save-api-key" class="save-btn">Kaydet</button>
+                    <input type="password" id="response-api-key-input" placeholder="Response API key'inizi buraya girin..." class="api-key-input">
+                    <button id="save-response-api-key" class="save-btn">Kaydet</button>
                 </div>
-                <div class="api-status" id="api-status">
-                    <span id="api-tier-info">🔍 API analiz ediliyor...</span>
+                <div class="api-status" id="response-api-status">
+                    <span id="response-api-tier-info">🔍 Response API analiz ediliyor...</span>
+                </div>
+            </div>
+
+            <!-- TTS API Key Input -->
+            <div class="setting-item">
+                <label for="tts-api-key-input">TTS API Key (Gemini TTS)</label>
+                <div class="api-key-container">
+                    <input type="password" id="tts-api-key-input" placeholder="TTS API key'inizi buraya girin..." class="api-key-input">
+                    <button id="save-tts-api-key" class="save-btn">Kaydet</button>
+                </div>
+                <div class="api-status" id="tts-api-status">
+                    <span id="tts-api-tier-info">🔍 TTS API analiz ediliyor...</span>
+                </div>
+                <div class="warning-text">
+                    ⚠️ DİKKAT: Response ve TTS için farklı API key kullanın!<br>
+                    Aynı API key kullanımında hata verebilir ve limitler karışabilir.
                 </div>
             </div>
 
