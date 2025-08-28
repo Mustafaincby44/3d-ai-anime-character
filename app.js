@@ -30,7 +30,7 @@ let messageCount = 0;
 
 // API Settings & Tracking
 let currentResponseModel = 'gemini-2.5-flash-lite';
-let currentTTSModel = 'gemini-1.5-flash'; // TTS için uygun model
+let currentTTSModel = 'gemini-2.5-flash-preview-tts'; // TTS için uygun model
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -38,6 +38,8 @@ const API_LIMITS = {
     free: {
         'gemini-2.5-flash': { rpm: 15, rpd: 250, name: 'Gemini 2.5 Flash' },
         'gemini-2.5-flash-lite': { rpm: 60, rpd: 1000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-2.5-flash-preview-tts': { rpm: 30, rpd: 500, name: 'Gemini 2.5 Flash Preview TTS' },
+        'gemini-2.5-pro-preview-tts': { rpm: 20, rpd: 300, name: 'Gemini 2.5 Pro Preview TTS' },
         'gemini-1.5-flash': { rpm: 15, rpd: 50, name: 'Gemini 1.5 Flash' },
         'gemini-1.5-pro': { rpm: 2, rpd: 100, name: 'Gemini 1.5 Pro' },
         'gemini-1.0-pro': { rpm: 60, rpd: 1500, name: 'Gemini 1.0 Pro' }
@@ -46,6 +48,8 @@ const API_LIMITS = {
     tier1: {
         'gemini-2.5-flash': { rpm: 1000, rpd: 10000, name: 'Gemini 2.5 Flash' },
         'gemini-2.5-flash-lite': { rpm: 2000, rpd: 50000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-2.5-flash-preview-tts': { rpm: 500, rpd: 10000, name: 'Gemini 2.5 Flash Preview TTS' },
+        'gemini-2.5-pro-preview-tts': { rpm: 300, rpd: 6000, name: 'Gemini 2.5 Pro Preview TTS' },
         'gemini-1.5-flash': { rpm: 1000, rpd: 5000, name: 'Gemini 1.5 Flash' },
         'gemini-1.5-pro': { rpm: 360, rpd: 3000, name: 'Gemini 1.5 Pro' },
         'gemini-1.0-pro': { rpm: 1000, rpd: 30000, name: 'Gemini 1.0 Pro' }
@@ -54,6 +58,8 @@ const API_LIMITS = {
     enterprise: {
         'gemini-2.5-flash': { rpm: 10000, rpd: 1000000, name: 'Gemini 2.5 Flash' },
         'gemini-2.5-flash-lite': { rpm: 20000, rpd: 2000000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-2.5-flash-preview-tts': { rpm: 5000, rpd: 100000, name: 'Gemini 2.5 Flash Preview TTS' },
+        'gemini-2.5-pro-preview-tts': { rpm: 3000, rpd: 60000, name: 'Gemini 2.5 Pro Preview TTS' },
         'gemini-1.5-flash': { rpm: 10000, rpd: 500000, name: 'Gemini 1.5 Flash' },
         'gemini-1.5-pro': { rpm: 5000, rpd: 100000, name: 'Gemini 1.5 Pro' },
         'gemini-1.0-pro': { rpm: 10000, rpd: 1000000, name: 'Gemini 1.0 Pro' }
@@ -741,7 +747,13 @@ async function generateTTS(text) {
     
     try {
         // Use the multimodal API for speech generation
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+        // Use correct endpoint for TTS models
+        let apiUrl;
+        if (currentTTSModel.includes('preview-tts')) {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+        } else {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+        }
         
         const payload = {
             contents: [{ 
@@ -1307,10 +1319,10 @@ function initializeSettings() {
             console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
             
             // Only allow TTS-compatible models
-            if (!['gemini-1.5-flash', 'gemini-1.5-pro'].includes(currentTTSModel)) {
+            if (!['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(currentTTSModel)) {
                 console.log('⚠️ Warning: This model does not support TTS');
-                currentTTSModel = 'gemini-1.5-flash'; // Force back to TTS model
-                ttsModelSelect.value = 'gemini-1.5-flash';
+                currentTTSModel = 'gemini-2.5-flash-preview-tts'; // Force back to TTS model
+                ttsModelSelect.value = 'gemini-2.5-flash-preview-tts';
             }
             
             updateLimitDisplay();
