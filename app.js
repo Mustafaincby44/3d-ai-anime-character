@@ -369,6 +369,29 @@ async function detectAPITier() {
         console.log('🔍 API Response status:', response.status);
         console.log('🔍 API Response headers:', Object.fromEntries(response.headers.entries()));
 
+        // Check if API key is valid first
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('Invalid API key');
+            } else if (response.status === 429) {
+                // Rate limit hit - this means API key is valid
+                console.log('🚫 Rate limit hit - API key is valid');
+                apiUsage.tier = 'free'; // Default to free tier
+                saveAPIUsage();
+                return 'free';
+            } else {
+                throw new Error(`API request failed: ${response.status}`);
+            }
+        }
+
+        // Try to get response body for more info
+        try {
+            const responseBody = await response.json();
+            console.log('🔍 API Response body:', responseBody);
+        } catch (parseError) {
+            console.log('🔍 Could not parse response body');
+        }
+
         // Check rate limit headers to get real usage and limits
         const rateLimitRemaining = response.headers.get('x-ratelimit-remaining-requests');
         const rateLimitLimit = response.headers.get('x-ratelimit-limit-requests');
@@ -402,13 +425,17 @@ async function detectAPITier() {
             console.log(`🎯 API Tier detected: ${apiUsage.tier} (limit: ${limitValue})`);
             
         } else {
-            console.log('⚠️ No rate limit headers found - assuming free tier');
-            apiUsage.tier = 'free';
-        }
-        
-        // Check if API key is valid
-        if (!response.ok && response.status === 401) {
-            throw new Error('Invalid API key');
+            console.log('⚠️ No rate limit headers found - checking API key format for tier hints');
+            
+            // Try to determine tier from API key format or other indicators
+            if (apiUsage.responseApiKey.length > 50) {
+                // Longer API keys might indicate paid tier
+                console.log('🔍 Long API key detected - might be paid tier');
+                apiUsage.tier = 'tier1';
+            } else {
+                console.log('🔍 Standard API key format - assuming free tier');
+                apiUsage.tier = 'free';
+            }
         }
         
         saveAPIUsage();
@@ -1400,13 +1427,27 @@ function initializeSettings() {
                 console.log('💾 Saving new TTS API key...');
                 apiUsage.ttsApiKey = newApiKey;
                 
-                // Update UI
-                ttsApiKeyInput.value = '••••••••••••••••••••';
-                updateTTSAPIStatus();
-                updateLimitDisplay();
+                // Update status
+                if (ttsApiTierInfo) ttsApiTierInfo.textContent = '🔍 TTS API analiz ediliyor...';
+                
+                try {
+                    // Update UI
+                    ttsApiKeyInput.value = '••••••••••••••••••••';
+                    updateTTSAPIStatus();
+                    updateLimitDisplay();
                     
-                console.log('✅ TTS API key saved');
+                    console.log('✅ TTS API key saved and analyzed');
                     
+                } catch (error) {
+                    console.error('❌ TTS API key validation failed:', error);
+                    if (ttsApiTierInfo) {
+                        ttsApiTierInfo.textContent = '❌ Geçersiz TTS API key';
+                    }
+                    // Don't save invalid API key
+                    apiUsage.ttsApiKey = '';
+                }
+                
+                saveAPIUsage();
             }
         });
         
@@ -1435,10 +1476,81 @@ function updateResponseAPIStatus() {
     }
 }
 
+async function detectTTSTier() {
+    if (!apiUsage.ttsApiKey) {
+        console.log('⚠️ No TTS API key provided - cannot detect tier');
+        return 'free';
+    }
+
+    try {
+        console.log('🔍 Analyzing TTS API key...');
+        
+        // Test TTS API with a simple request
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiUsage.ttsApiKey}`;
+        const testPayload = {
+            contents: [{ parts: [{ text: "test" }] }],
+            generationConfig: {
+                responseModalities: ["AUDIO"]
+            }
+        };
+
+        const response = await fetch(testUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testPayload)
+        });
+
+        console.log('🔍 TTS API Response status:', response.status);
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('Invalid TTS API key');
+            } else if (response.status === 429) {
+                console.log('🚫 TTS Rate limit hit - API key is valid');
+                return 'free';
+            }
+        }
+
+        // Check TTS-specific headers or response
+        const ttsLimit = response.headers.get('x-ratelimit-limit') || response.headers.get('x-ratelimit-limit-requests');
+        
+        if (ttsLimit) {
+            const limitValue = parseInt(ttsLimit);
+            apiUsage.realUsage.tts.limit = limitValue;
+            
+            if (limitValue >= 100000) return 'enterprise';
+            else if (limitValue >= 3000) return 'tier1';
+            else return 'free';
+        }
+
+        // Default tier detection for TTS
+        if (apiUsage.ttsApiKey.length > 50) {
+            return 'tier1';
+        } else {
+            return 'free';
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to detect TTS API tier:', error);
+        return 'free';
+    }
+}
+
 function updateTTSAPIStatus() {
     const apiTierInfo = document.getElementById('tts-api-tier-info');
     if (apiTierInfo && apiUsage.ttsApiKey) {
-        apiTierInfo.textContent = `✅ TTS API aktif`;
+        // Try to detect TTS tier
+        detectTTSTier().then(tier => {
+            if (tier === 'free') {
+                apiTierInfo.textContent = `✅ TTS API aktif (Free Tier)`;
+            } else if (tier === 'tier1') {
+                apiTierInfo.textContent = `✅ TTS API aktif (Tier 1)`;
+            } else {
+                apiTierInfo.textContent = `✅ TTS API aktif (Enterprise)`;
+            }
+        }).catch(() => {
+            apiTierInfo.textContent = `✅ TTS API aktif`;
+        });
     }
 }
 
