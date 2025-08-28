@@ -1049,11 +1049,10 @@ function playWavFile(wavUrl) {
             // Clean up WAV URL
             URL.revokeObjectURL(wavUrl);
             
-            // IMPORTANT: Stop speech and return to idle state
-            if (isSpeaking) {
-                console.log('🔄 Speech ended, returning to idle state');
-                stopSpeech();
-            }
+            // IMPORTANT: Always stop speech when audio ends
+            console.log('🔄 Audio ended, forcing speech stop');
+            console.log('📊 Current state:', { isSpeaking, appState });
+            stopSpeech();
         };
         
         // Safety timeout - force stop speech after audio duration + buffer
@@ -1180,6 +1179,7 @@ function simulateSpeech(text) {
 
 function stopSpeech() {
     console.log('🛑 Stopping speech...');
+    console.log('📊 Before stop - isSpeaking:', isSpeaking, 'appState:', appState);
     
     // Reset all speech flags immediately
     isSpeaking = false;
@@ -1189,9 +1189,12 @@ function stopSpeech() {
     // Use the centralized reset function
     resetMouthState();
     
-    // Update state
-    setAppState('idle');
+    // Force state to idle regardless of current state
+    if (appState === 'speaking') {
+        setAppState('idle');
+    }
     
+    console.log('📊 After stop - isSpeaking:', isSpeaking, 'appState:', appState);
     console.log('✅ Speech stopped, system clean');
 }
 
