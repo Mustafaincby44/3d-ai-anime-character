@@ -29,26 +29,22 @@ let systemReady = false;
 let messageCount = 0;
 
 // API Settings & Tracking
-let currentResponseModel = 'gemini-2.5-flash-preview-05-20';
-let currentTTSModel = 'gemini-2.5-flash-preview-tts';
+let currentResponseModel = 'gemini-1.5-flash';
+let currentTTSModel = 'gemini-1.5-flash';
 
 // API Rate Limits (Google AI Studio)
 const API_LIMITS = {
     // Free Tier Limits
     free: {
-        'gemini-2.5-flash-preview-05-20': { rpm: 15, rpd: 1500, name: 'Gemini 2.5 Flash' },
-        'gemini-1.5-pro': { rpm: 2, rpd: 50, name: 'Gemini 1.5 Pro' },
         'gemini-1.5-flash': { rpm: 15, rpd: 1500, name: 'Gemini 1.5 Flash' },
-        'gemini-2.5-flash-preview-tts': { rpm: 10, rpd: 100, name: 'Gemini 2.5 Flash TTS' },
-        'gemini-1.5-pro-tts': { rpm: 5, rpd: 50, name: 'Gemini 1.5 Pro TTS' }
+        'gemini-1.5-pro': { rpm: 2, rpd: 50, name: 'Gemini 1.5 Pro' },
+        'gemini-1.0-pro': { rpm: 60, rpd: 1500, name: 'Gemini 1.0 Pro' }
     },
     // Paid Tier Limits (estimate)
     paid: {
-        'gemini-2.5-flash-preview-05-20': { rpm: 1000, rpd: 50000, name: 'Gemini 2.5 Flash' },
-        'gemini-1.5-pro': { rpm: 360, rpd: 10000, name: 'Gemini 1.5 Pro' },
         'gemini-1.5-flash': { rpm: 1000, rpd: 50000, name: 'Gemini 1.5 Flash' },
-        'gemini-2.5-flash-preview-tts': { rpm: 300, rpd: 10000, name: 'Gemini 2.5 Flash TTS' },
-        'gemini-1.5-pro-tts': { rpm: 100, rpd: 5000, name: 'Gemini 1.5 Pro TTS' }
+        'gemini-1.5-pro': { rpm: 360, rpd: 10000, name: 'Gemini 1.5 Pro' },
+        'gemini-1.0-pro': { rpm: 1000, rpd: 30000, name: 'Gemini 1.0 Pro' }
     }
 };
 
@@ -93,8 +89,10 @@ function init() {
     // Initialize Brain System
     initializeBrainSystem();
     
-    // Initialize API tracking
-    initializeAPITracking();
+    // Initialize API tracking (delayed for UI readiness)
+    setTimeout(() => {
+        initializeAPITracking();
+    }, 500);
     
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 1.0));
@@ -355,7 +353,7 @@ function trackAPIUsage(type) {
 function updateLimitDisplay() {
     const tier = apiUsage.tier;
     const responseLimits = API_LIMITS[tier][currentResponseModel];
-    const ttsLimits = API_LIMITS[tier][currentTTSModel];
+    const ttsLimits = API_LIMITS[tier][currentTTSModel] || responseLimits; // Use same model for TTS
     
     // Update top display
     const topResponseUsed = document.getElementById('top-response-used');
@@ -394,7 +392,7 @@ function getCurrentLimits() {
     const tier = apiUsage.tier;
     return {
         response: API_LIMITS[tier][currentResponseModel],
-        tts: API_LIMITS[tier][currentTTSModel]
+        tts: API_LIMITS[tier][currentTTSModel] || API_LIMITS[tier][currentResponseModel]
     };
 }
 
@@ -556,7 +554,13 @@ async function speakText(text) {
             updateStatus('TTS hatası - metin simülasyonu kullanılıyor...');
         }
         
-        // Use fallback instead of stopping
+        // Try Web Speech API fallback
+        console.log('🗣️ Trying Web Speech API fallback...');
+        if (tryWebSpeechAPI(text)) {
+            return;
+        }
+        
+        // Final fallback: simulate speech
         console.log('🎭 Using simulated speech for:', text);
         simulateSpeech(text);
         return;
@@ -568,51 +572,78 @@ async function speakText(text) {
 }
 
 async function generateTTS(text) {
-    console.log('Starting TTS generation...');
+    console.log('🎵 Starting TTS generation with:', currentTTSModel);
     
     // Track TTS API usage
     trackAPIUsage('tts');
     
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${API_KEY}`;
-    
-    const payload = {
-        model: currentTTSModel,
-        contents: [{ parts: [{ text: text }] }],
-        generationConfig: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-                voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName: "Leda" }
+    try {
+        // Use the multimodal API for speech generation
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${API_KEY}`;
+        
+        const payload = {
+            contents: [{ 
+                parts: [{ text: text }] 
+            }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: { 
+                            voiceName: "tr-TR-Wavenet-A" // Turkish voice
+                        }
+                    }
                 }
             }
+        };
+
+        console.log('🎵 TTS Request payload:', JSON.stringify(payload, null, 2));
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        console.log('🎵 TTS Response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ TTS API error:', response.status, errorText);
+            throw new Error(`TTS API failed: ${response.status} - ${errorText}`);
         }
-    };
 
-    const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        throw new Error(`TTS API failed: ${response.status}`);
+        const result = await response.json();
+        console.log('🎵 TTS Response result:', result);
+        
+        // Check if we have audio data
+        if (result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
+            const audioData = result.candidates[0].content.parts[0].inlineData.data;
+            console.log('🎵 Audio data received, length:', audioData.length);
+            
+            // Convert base64 to audio buffer
+            const binaryString = atob(audioData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            console.log('🎵 Decoding audio buffer...');
+            const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+            console.log('✅ TTS audio ready to play');
+            return audioBuffer;
+            
+        } else {
+            console.error('❌ No audio data in TTS response');
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('❌ TTS generation failed:', error);
+        return null;
     }
-
-    const result = await response.json();
-    
-    if (!result.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
-        throw new Error('Invalid TTS response');
-    }
-
-    const audioData = result.candidates[0].content.parts[0].inlineData.data;
-    const pcmBuffer = base64ToArrayBuffer(audioData);
-    const pcmData = new Int16Array(pcmBuffer);
-    const wavBuffer = pcmToWav(pcmData, 24000);
-    
-    console.log('TTS audio data processed, decoding...');
-    const decodedAudio = await audioContext.decodeAudioData(wavBuffer);
-    console.log('TTS audio ready to play');
-    return decodedAudio;
 }
 
 function playAudio(audioBuffer) {
@@ -664,6 +695,51 @@ function playAudio(audioBuffer) {
             stopSpeech();
         }
     }, audioDuration + 500); // Reduced buffer to 500ms
+}
+
+function tryWebSpeechAPI(text) {
+    if ('speechSynthesis' in window) {
+        console.log('🗣️ Using Web Speech API');
+        
+        try {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'tr-TR';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+            utterance.volume = volumeLevel;
+            
+            utterance.onstart = () => {
+                console.log('🗣️ Web Speech started');
+                updateStatus('Konuşuyor (Web Speech)...');
+                animateMouth(text);
+            };
+            
+            utterance.onend = () => {
+                console.log('🗣️ Web Speech ended');
+                resetMouthState();
+                updateStatus('Dinliyorum...');
+                setTimeout(() => {
+                    resetSystemState();
+                }, 1000);
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('❌ Web Speech error:', event.error);
+                resetMouthState();
+                simulateSpeech(text);
+            };
+            
+            speechSynthesis.speak(utterance);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Web Speech API error:', error);
+            return false;
+        }
+    }
+    
+    console.log('❌ Web Speech API not available');
+    return false;
 }
 
 function simulateSpeech(text) {
