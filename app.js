@@ -30,7 +30,7 @@ let messageCount = 0;
 
 // API Settings & Tracking
 let currentResponseModel = 'gemini-2.5-flash-lite';
-let currentTTSModel = 'gemini-2.5-flash-preview-tts'; // TTS için uygun model
+let currentTTSModel = 'gemini-1.5-flash'; // TTS için uygun model
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -794,6 +794,13 @@ async function generateTTS(text) {
 
         const result = await response.json();
         console.log('🎵 Gemini TTS Response result:', result);
+        console.log('🎵 Checking for audio data...');
+        console.log('🎵 Candidates:', result.candidates);
+        console.log('🎵 First candidate:', result.candidates?.[0]);
+        console.log('🎵 Content:', result.candidates?.[0]?.content);
+        console.log('🎵 Parts:', result.candidates?.[0]?.content?.parts);
+        console.log('🎵 First part:', result.candidates?.[0]?.content?.parts?.[0]);
+        console.log('🎵 Inline data:', result.candidates?.[0]?.content?.parts?.[0]?.inlineData);
         
         // Check if we have audio data
         if (result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
@@ -1319,10 +1326,10 @@ function initializeSettings() {
             console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
             
             // Only allow TTS-compatible models
-            if (!['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts', 'gemini-1.5-flash', 'gemini-1.5-pro'].includes(currentTTSModel)) {
+            if (!['gemini-1.5-flash', 'gemini-1.5-pro'].includes(currentTTSModel)) {
                 console.log('⚠️ Warning: This model does not support TTS');
-                currentTTSModel = 'gemini-2.5-flash-preview-tts'; // Force back to TTS model
-                ttsModelSelect.value = 'gemini-2.5-flash-preview-tts';
+                currentTTSModel = 'gemini-1.5-flash'; // Force back to TTS model
+                ttsModelSelect.value = 'gemini-1.5-flash';
             }
             
             updateLimitDisplay();
