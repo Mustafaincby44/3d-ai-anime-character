@@ -221,17 +221,18 @@ function updateMouthAnimation() {
                     audioBaselineSum += average;
                     audioCalibrationCount++;
                     
-                    if (audioCalibrationCount >= 3) {
+                    if (audioCalibrationCount >= 5) { // Increase to 5 messages
                         const baseline = audioBaselineSum / audioCalibrationCount;
                         console.log(`🎯 Audio calibrated! Baseline: ${baseline.toFixed(2)}`);
                         audioCalibrated = true;
                     }
                     
-                    // Very conservative opening during calibration
-                    targetMouthOpen = Math.min(0.08, (average / 200.0) * 0.15);
+                    // EXTREMELY conservative during calibration - almost closed
+                    targetMouthOpen = Math.min(0.03, (average / 300.0) * 0.08);
+                    console.log(`🔧 Calibration ${audioCalibrationCount}/5: mouth=${targetMouthOpen.toFixed(3)}`);
                 } else {
-                    // Normal operation after calibration
-                    targetMouthOpen = Math.min(0.25, (average / 128.0) * 0.35);
+                    // Normal operation after calibration - still conservative
+                    targetMouthOpen = Math.min(0.2, (average / 150.0) * 0.3);
                 }
             } else {
                 targetMouthOpen = 0.0;
@@ -258,10 +259,16 @@ function updateMouthAnimation() {
     // Apply to VRM
     vrm.expressionManager.setValue('aa', mouthOpenValue);
     
-    // Triple-check: if not speaking, force mouth closed
+    // Quadruple-check: if not speaking, force mouth closed EVERY frame
     if (!isSpeaking || appState !== 'speaking') {
         vrm.expressionManager.setValue('aa', 0);
         mouthOpenValue = 0.0;
+        targetMouthOpen = 0.0;
+        
+        // Extra aggressive closure for first few messages if not calibrated
+        if (!audioCalibrated) {
+            vrm.expressionManager.setValue('aa', 0);
+        }
     }
 }
 
@@ -532,15 +539,33 @@ function stopSpeech() {
         }
     }, 50);
     
-    // Additional safety check after 200ms
+    // Additional safety checks - multiple timeouts to ensure closure
     setTimeout(() => {
         if (vrm?.expressionManager && appState === 'idle') {
             vrm.expressionManager.setValue('aa', 0);
             mouthOpenValue = 0.0;
             targetMouthOpen = 0.0;
-            console.log('🔧 Safety check: mouth ensured closed');
+            console.log('🔧 Safety check 1: mouth ensured closed');
         }
     }, 200);
+    
+    setTimeout(() => {
+        if (vrm?.expressionManager && !isSpeaking) {
+            vrm.expressionManager.setValue('aa', 0);
+            mouthOpenValue = 0.0;
+            targetMouthOpen = 0.0;
+            console.log('🔧 Safety check 2: mouth forced closed');
+        }
+    }, 500);
+    
+    setTimeout(() => {
+        if (vrm?.expressionManager && appState === 'idle') {
+            vrm.expressionManager.setValue('aa', 0);
+            mouthOpenValue = 0.0;
+            targetMouthOpen = 0.0;
+            console.log('🔧 Final safety check: mouth absolutely closed');
+        }
+    }, 1000);
     
     console.log('Speech stopped, state reset to idle');
 }
