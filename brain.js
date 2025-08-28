@@ -72,13 +72,13 @@ const BRAIN_CONFIG = {
     
     // Advanced Will System - AI decides when to speak
     willSystem: {
-        baseDesireToSpeak: 0.3,           // Temel konuşma isteği
-        emotionInfluence: 0.4,            // Duyguların etkisi
-        contextInfluence: 0.3,            // Bağlamın etkisi
-        personalityInfluence: 0.5,        // Kişiliğin etkisi
+        baseDesireToSpeak: 0.1,           // Çok düşük temel istek
+        emotionInfluence: 0.6,            // Duyguların büyük etkisi
+        contextInfluence: 0.5,            // Bağlamın güçlü etkisi
+        personalityInfluence: 0.4,        // Kişiliğin orta etkisi
         
-        speakingThreshold: 0.6,           // Bu eşiği geçerse konuşur
-        silenceComfort: 0.4,              // Sessizlikten ne kadar rahatsız
+        speakingThreshold: 0.75,          // Daha yüksek eşik - daha az konuşur
+        silenceComfort: 0.2,              // Sessizlikten daha az rahatsız
         
         // Konuşma isteğini etkileyen faktörler
         factors: {
@@ -599,11 +599,11 @@ class WillSystem {
         const timeSinceLastInteraction = Date.now() - (window.lastUserInteraction || Date.now());
         const timeSinceLastSelfTalk = Date.now() - (window.lastSelfTalk || Date.now());
         
-        // Loneliness increases over time without interaction
-        this.contextFactors.loneliness = Math.min(1.0, timeSinceLastInteraction / 60000); // Max after 1 minute
+        // Loneliness increases over time without interaction - slower buildup
+        this.contextFactors.loneliness = Math.min(1.0, timeSinceLastInteraction / 120000); // Max after 2 minutes
         
-        // Boredom increases without self-talk
-        this.contextFactors.boredom = Math.min(1.0, timeSinceLastSelfTalk / 30000); // Max after 30 seconds
+        // Boredom increases without self-talk - slower buildup
+        this.contextFactors.boredom = Math.min(1.0, timeSinceLastSelfTalk / 60000); // Max after 1 minute
         
         // Excitement from current emotion
         const emotion = this.emotionEngine.getCurrentEmotion();
@@ -692,8 +692,8 @@ class SelfTalkManager {
         this.checkInterval = null;
         this.lastUserInteraction = Date.now();
         
-        // Advanced timing
-        this.baseCheckInterval = 3000; // Check every 3 seconds
+        // Advanced timing - more realistic intervals
+        this.baseCheckInterval = 8000; // Check every 8 seconds (less frequent)
         this.adaptiveInterval = this.baseCheckInterval;
     }
 
