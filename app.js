@@ -106,6 +106,21 @@ function createParticles() {
 function initAudio() {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Pre-resume audio context to avoid delays
+        if (audioContext.state === 'suspended') {
+            // Add user interaction listener to resume audio context
+            const resumeAudio = () => {
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed');
+                });
+                document.removeEventListener('click', resumeAudio);
+                document.removeEventListener('keydown', resumeAudio);
+            };
+            document.addEventListener('click', resumeAudio);
+            document.addEventListener('keydown', resumeAudio);
+        }
+        
         console.log('Audio system initialized');
     } catch (error) {
         console.error('Audio not supported:', error);
@@ -196,17 +211,25 @@ function updateMouthAnimation() {
     } else {
         // Force mouth closed in all other states
         targetMouthOpen = 0.0;
+        mouthOpenValue = 0.0; // Immediate reset when not speaking
     }
     
-    // Smooth mouth animation
-    mouthOpenValue = THREE.MathUtils.lerp(mouthOpenValue, targetMouthOpen, mouthAnimationSpeed);
+    // Smooth mouth animation only when speaking
+    if (appState === 'speaking' && isSpeaking) {
+        mouthOpenValue = THREE.MathUtils.lerp(mouthOpenValue, targetMouthOpen, mouthAnimationSpeed);
+    } else {
+        // Immediate close when not speaking
+        mouthOpenValue = 0.0;
+        targetMouthOpen = 0.0;
+    }
     
-    // Apply to VRM and ensure it's actually closed
+    // Apply to VRM
     vrm.expressionManager.setValue('aa', mouthOpenValue);
     
-    // Double-check: if not speaking, force mouth closed
+    // Triple-check: if not speaking, force mouth closed
     if (!isSpeaking || appState !== 'speaking') {
         vrm.expressionManager.setValue('aa', 0);
+        mouthOpenValue = 0.0;
     }
 }
 
@@ -276,11 +299,15 @@ async function speakText(text) {
         // Try TTS first
         const audioBuffer = await generateTTS(text);
         if (audioBuffer) {
+            // Immediately start playing audio without delay
             playAudio(audioBuffer);
             return;
         }
     } catch (error) {
         console.error('TTS failed, using fallback:', error);
+        // If TTS fails, stop speaking state and return to idle
+        stopSpeech();
+        return;
     }
     
     // Fallback: simulate speech without audio
@@ -288,6 +315,7 @@ async function speakText(text) {
 }
 
 async function generateTTS(text) {
+    console.log('Starting TTS generation...');
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
     
     const payload = {
@@ -324,7 +352,10 @@ async function generateTTS(text) {
     const pcmData = new Int16Array(pcmBuffer);
     const wavBuffer = pcmToWav(pcmData, 24000);
     
-    return await audioContext.decodeAudioData(wavBuffer);
+    console.log('TTS audio data processed, decoding...');
+    const decodedAudio = await audioContext.decodeAudioData(wavBuffer);
+    console.log('TTS audio ready to play');
+    return decodedAudio;
 }
 
 function playAudio(audioBuffer) {
@@ -349,19 +380,19 @@ function playAudio(audioBuffer) {
     source.connect(analyser);
     analyser.connect(audioContext.destination);
     
-    // Start audio
-    source.start(0);
-    
-    // Handle audio end with timeout protection
+    // Handle audio end with improved cleanup
     source.onended = () => {
         console.log('Audio ended naturally');
-        setTimeout(() => {
-            if (isSpeaking) {
-                console.log('Forcing speech stop after audio end');
-                stopSpeech();
-            }
-        }, 100); // Small delay to ensure cleanup
+        // Immediate cleanup without delay
+        if (isSpeaking) {
+            console.log('Stopping speech after audio end');
+            stopSpeech();
+        }
     };
+    
+    // Start audio immediately
+    source.start(0);
+    console.log('Audio started playing immediately');
     
     // Add timeout protection in case onended doesn't fire
     const audioDuration = audioBuffer.duration * 1000; // Convert to milliseconds
@@ -370,7 +401,7 @@ function playAudio(audioBuffer) {
             console.log('Audio timeout reached, forcing stop');
             stopSpeech();
         }
-    }, audioDuration + 1000); // Add 1 second buffer
+    }, audioDuration + 500); // Reduced buffer to 500ms
 }
 
 function simulateSpeech(text) {
@@ -410,7 +441,7 @@ function simulateSpeech(text) {
 function stopSpeech() {
     console.log('Stopping speech...');
     
-    // Reset all speech flags
+    // Reset all speech flags immediately
     isSpeaking = false;
     targetMouthOpen = 0.0;
     mouthOpenValue = 0.0;
@@ -438,13 +469,22 @@ function stopSpeech() {
         audioDataArray = null;
     }
     
-    // Force mouth closed
+    // Force mouth closed immediately and ensure it stays closed
     if (vrm?.expressionManager) {
         vrm.expressionManager.setValue('aa', 0);
+        console.log('Mouth forced closed');
     }
     
     // Update state
     setAppState('idle');
+    
+    // Double-check mouth is closed after state change
+    setTimeout(() => {
+        if (vrm?.expressionManager && !isSpeaking) {
+            vrm.expressionManager.setValue('aa', 0);
+            console.log('Double-checked: mouth is closed');
+        }
+    }, 50);
     
     console.log('Speech stopped, state reset to idle');
 }
