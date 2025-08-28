@@ -758,6 +758,10 @@ async function generateTTS(text) {
             apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
         }
         
+        // Get selected voice from UI
+        const voiceSelect = document.getElementById('voice-select');
+        const selectedVoice = voiceSelect ? voiceSelect.value : 'alnilam'; // Default to alnilam
+        
         const payload = {
             contents: [{ 
                 parts: [{ text: text }] 
@@ -767,7 +771,7 @@ async function generateTTS(text) {
                 speechConfig: {
                     voiceConfig: {
                         prebuiltVoiceConfig: { 
-                            voiceName: "tr-TR-Wavenet-A" // Turkish voice
+                            voiceName: selectedVoice // Use selected voice
                         }
                     }
                 }
@@ -775,6 +779,7 @@ async function generateTTS(text) {
         };
 
         console.log('🎵 Gemini TTS Request payload:', JSON.stringify(payload, null, 2));
+        console.log('🎵 Using voice:', selectedVoice);
 
         const response = await fetch(apiUrl, {
             method: 'POST',
