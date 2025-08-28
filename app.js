@@ -35,10 +35,7 @@ let mouthOpenValue = 0.0;
 let targetMouthOpen = 0.0;
 let mouthAnimationSpeed = 0.15;
 
-// Audio calibration - prevent initial screaming
-let audioCalibrated = false;
-let audioCalibrationCount = 0;
-let audioBaselineSum = 0;
+// Simple mouth control - no complex calibration needed
 
 // Model URLs
 const modelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
@@ -201,12 +198,13 @@ function updateMouthAnimation() {
     // STRICT mouth control - only open when actually speaking
     if (appState === 'speaking' && isSpeaking && (analyser || currentAudioSource)) {
         if (analyser && audioDataArray) {
-            // Real audio analysis with calibration
+            // Simple and effective audio analysis
             analyser.getByteFrequencyData(audioDataArray);
             
             let sum = 0;
             let count = 0;
-            for (let i = 3; i < 8; i++) {
+            // Use more frequency bins for better analysis
+            for (let i = 2; i < 12; i++) {
                 if (audioDataArray[i] > 0) {
                     sum += audioDataArray[i];
                     count++;
@@ -215,31 +213,15 @@ function updateMouthAnimation() {
             
             if (count > 0) {
                 const average = sum / count;
-                
-                // Audio calibration for first few messages - prevent screaming but allow normal movement
-                if (!audioCalibrated) {
-                    audioBaselineSum += average;
-                    audioCalibrationCount++;
-                    
-                    if (audioCalibrationCount >= 3) { // Back to 3 messages
-                        const baseline = audioBaselineSum / audioCalibrationCount;
-                        console.log(`🎯 Audio calibrated! Baseline: ${baseline.toFixed(2)}`);
-                        audioCalibrated = true;
-                    }
-                    
-                    // Normal movement but prevent extreme values during calibration
-                    targetMouthOpen = Math.min(0.25, (average / 140.0) * 0.45);
-                    console.log(`🔧 Calibration ${audioCalibrationCount}/3: mouth=${targetMouthOpen.toFixed(3)}`);
-                } else {
-                    // Normal operation after calibration
-                    targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
-                }
+                // Simple formula - no calibration complexity
+                // Reduced sensitivity to prevent screaming
+                targetMouthOpen = Math.min(0.3, (average / 200.0) * 0.5);
             } else {
                 targetMouthOpen = 0.0;
             }
         } else {
-            // Fallback animation when no audio - normal for all cases
-            targetMouthOpen = 0.1 + (Math.sin(Date.now() * 0.01) * 0.2);
+            // Simple fallback animation when no audio
+            targetMouthOpen = 0.08 + (Math.sin(Date.now() * 0.008) * 0.12);
         }
     } else {
         // Force mouth closed in all other states
@@ -259,13 +241,11 @@ function updateMouthAnimation() {
     // Apply to VRM
     vrm.expressionManager.setValue('aa', mouthOpenValue);
     
-    // Quadruple-check: if not speaking, force mouth closed EVERY frame
+    // Simple but effective: if not speaking, close mouth immediately
     if (!isSpeaking || appState !== 'speaking') {
-        vrm.expressionManager.setValue('aa', 0);
-        mouthOpenValue = 0.0;
         targetMouthOpen = 0.0;
-        
-        // Natural closure - no extra aggressive behavior needed
+        mouthOpenValue = 0.0;
+        vrm.expressionManager.setValue('aa', 0);
     }
 }
 
@@ -526,43 +506,13 @@ function stopSpeech() {
     // Update state
     setAppState('idle');
     
-    // Triple-check mouth is closed after state change
-    setTimeout(() => {
-        if (vrm?.expressionManager && !isSpeaking) {
-            vrm.expressionManager.setValue('aa', 0);
-            mouthOpenValue = 0.0;
-            targetMouthOpen = 0.0;
-            console.log('🔧 Triple-checked: mouth forced closed');
-        }
-    }, 50);
-    
-    // Additional safety checks - multiple timeouts to ensure closure
-    setTimeout(() => {
-        if (vrm?.expressionManager && appState === 'idle') {
-            vrm.expressionManager.setValue('aa', 0);
-            mouthOpenValue = 0.0;
-            targetMouthOpen = 0.0;
-            console.log('🔧 Safety check 1: mouth ensured closed');
-        }
-    }, 200);
-    
-    setTimeout(() => {
-        if (vrm?.expressionManager && !isSpeaking) {
-            vrm.expressionManager.setValue('aa', 0);
-            mouthOpenValue = 0.0;
-            targetMouthOpen = 0.0;
-            console.log('🔧 Safety check 2: mouth forced closed');
-        }
-    }, 500);
-    
-    setTimeout(() => {
-        if (vrm?.expressionManager && appState === 'idle') {
-            vrm.expressionManager.setValue('aa', 0);
-            mouthOpenValue = 0.0;
-            targetMouthOpen = 0.0;
-            console.log('🔧 Final safety check: mouth absolutely closed');
-        }
-    }, 1000);
+    // Simple immediate mouth closure
+    if (vrm?.expressionManager) {
+        vrm.expressionManager.setValue('aa', 0);
+        mouthOpenValue = 0.0;
+        targetMouthOpen = 0.0;
+        console.log('🔧 Mouth closed immediately');
+    }
     
     console.log('Speech stopped, state reset to idle');
 }
