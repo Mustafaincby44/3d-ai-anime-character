@@ -862,12 +862,23 @@ class SelfTalkManager {
 
     // Duygu değişikliği ile tetiklenen self-talk
     onEmotionChange(newEmotion, trigger) {
-        const config = BRAIN_CONFIG.selfTalk;
-        
-        if (Math.random() < config.emotionTriggerChance) {
-            setTimeout(() => {
-                this.triggerSelfTalk(`emotion_change_${newEmotion}`);
-            }, 2000 + Math.random() * 3000); // 2-5 saniye bekle
+        // Check if config exists and has required properties
+        if (BRAIN_CONFIG.selfTalk && BRAIN_CONFIG.selfTalk.emotionTriggerChance) {
+            const config = BRAIN_CONFIG.selfTalk;
+            
+            if (Math.random() < config.emotionTriggerChance) {
+                setTimeout(() => {
+                    this.triggerSelfTalk(`emotion_change_${newEmotion}`);
+                }, 2000 + Math.random() * 3000); // 2-5 saniye bekle
+            }
+        } else {
+            // Fallback if config is missing
+            console.warn('⚠️ BRAIN_CONFIG.selfTalk missing, using default values');
+            if (Math.random() < 0.3) { // 30% default chance
+                setTimeout(() => {
+                    this.triggerSelfTalk(`emotion_change_${newEmotion}`);
+                }, 2000 + Math.random() * 3000);
+            }
         }
     }
 }
