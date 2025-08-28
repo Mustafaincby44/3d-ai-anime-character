@@ -748,7 +748,15 @@ async function generateTTS(text) {
     try {
         // Use the multimodal API for speech generation
         // Use correct endpoint for TTS models
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+        let apiUrl;
+        if (currentTTSModel === 'gemini-2.5-flash-preview-tts') {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiUsage.ttsApiKey}`;
+        } else if (currentTTSModel === 'gemini-2.0-flash-preview-tts') {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-tts:generateContent?key=${apiUsage.ttsApiKey}`;
+        } else {
+            // Fallback
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+        }
         
         const payload = {
             contents: [{ 
