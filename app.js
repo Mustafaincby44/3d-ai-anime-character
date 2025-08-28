@@ -66,7 +66,8 @@ let apiUsage = {
     ttsRequests: 0,
     lastReset: new Date().toDateString(),
     tier: 'free', // Will be detected
-    apiKey: '', // Will be set by user
+    responseApiKey: '', // Response API key
+    ttsApiKey: '', // TTS API key (separate)
     realUsage: { // Actual API usage from headers
         response: { used: 0, limit: 0 },
         tts: { used: 0, limit: 0 }
@@ -81,9 +82,12 @@ function loadSavedUsage() {
             const parsed = JSON.parse(saved);
             const today = new Date().toDateString();
             
-            // Always load API key
-            if (parsed.apiKey) {
-                apiUsage.apiKey = parsed.apiKey;
+            // Always load API keys
+            if (parsed.responseApiKey) {
+                apiUsage.responseApiKey = parsed.responseApiKey;
+            }
+            if (parsed.ttsApiKey) {
+                apiUsage.ttsApiKey = parsed.ttsApiKey;
             }
             
             // Load usage only if same day
@@ -341,8 +345,8 @@ function updateMouthAnimation() {
 
 // ===== API TRACKING FUNCTIONS =====
 async function detectAPITier() {
-    if (!apiUsage.apiKey) {
-        console.log('⚠️ No API key provided - cannot detect tier');
+    if (!apiUsage.responseApiKey) {
+        console.log('⚠️ No response API key provided - cannot detect tier');
         apiUsage.tier = 'free';
         return 'free';
     }
@@ -351,7 +355,7 @@ async function detectAPITier() {
         console.log('🔍 Analyzing API key and detecting tier...');
         
         // Test with a simple request to determine tier and get usage info
-        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiUsage.apiKey}`;
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiUsage.responseApiKey}`;
         const testPayload = {
             contents: [{ parts: [{ text: "test tier detection" }] }]
         };
@@ -577,10 +581,16 @@ async function handleUserInput() {
         return;
     }
     
-    // Check if API key is provided
-    if (!apiUsage.apiKey) {
-        updateStatus('⚠️ API key gerekli! Lütfen ayarlardan API key girin.');
-        console.log('❌ No API key provided');
+    // Check if API keys are provided
+    if (!apiUsage.responseApiKey) {
+        updateStatus('⚠️ Response API key gerekli! Lütfen ayarlardan API key girin.');
+        console.log('❌ No response API key provided');
+        return;
+    }
+    
+    if (!apiUsage.ttsApiKey) {
+        updateStatus('⚠️ TTS API key gerekli! Lütfen ayarlardan TTS API key girin.');
+        console.log('❌ No TTS API key provided');
         return;
     }
     
@@ -629,7 +639,7 @@ async function getAIResponse(prompt) {
     // Track API usage
     trackAPIUsage('response');
     
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
     
     const requestBody = {
         contents: [{
@@ -714,7 +724,7 @@ async function generateTTS(text) {
     
     try {
         // Use the multimodal API for speech generation
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.apiKey}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
         
         const payload = {
             contents: [{ 
@@ -741,6 +751,9 @@ async function generateTTS(text) {
             },
             body: JSON.stringify(payload)
         });
+        
+        // Track TTS usage from response headers
+        trackAPIUsage('tts', response);
 
         console.log('🎵 TTS Response status:', response.status);
 
@@ -1162,7 +1175,7 @@ async function getAIResponseWithBrain(userMessage) {
     trackAPIUsage('response');
     
     // Call Gemini API with enhanced prompt (use current model)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
     
     const requestBody = {
         contents: [{
@@ -1215,7 +1228,8 @@ async function initializeAPITracking() {
     
     // Update display
     updateLimitDisplay();
-    updateAPIStatus();
+    updateResponseAPIStatus();
+    updateTTSAPIStatus();
     
     console.log('✅ API tracking initialized');
 }
@@ -1236,10 +1250,14 @@ function initializeSettings() {
     const autoTalkToggle = document.getElementById('auto-talk-toggle');
     const responseModelSelect = document.getElementById('response-model');
     const ttsModelSelect = document.getElementById('tts-model');
-    const apiKeyInput = document.getElementById('api-key-input');
-    const saveApiKeyBtn = document.getElementById('save-api-key');
-    const apiStatusDiv = document.getElementById('api-status');
-    const apiTierInfo = document.getElementById('api-tier-info');
+    const responseApiKeyInput = document.getElementById('response-api-key-input');
+    const saveResponseApiKeyBtn = document.getElementById('save-response-api-key');
+    const responseApiStatusDiv = document.getElementById('response-api-status');
+    const responseApiTierInfo = document.getElementById('response-api-tier-info');
+    const ttsApiKeyInput = document.getElementById('tts-api-key-input');
+    const saveTtsApiKeyBtn = document.getElementById('save-tts-api-key');
+    const ttsApiStatusDiv = document.getElementById('tts-api-status');
+    const ttsApiTierInfo = document.getElementById('tts-api-tier-info');
     
     if (!settingsBtn || !settingsPanel) {
         console.error('❌ Settings elements not found');
@@ -1317,42 +1335,42 @@ function initializeSettings() {
         });
     }
     
-    // API Key input handlers
-    if (apiKeyInput && saveApiKeyBtn) {
-        // Load saved API key
-        if (apiUsage.apiKey) {
-            apiKeyInput.value = '••••••••••••••••••••';
-            updateAPIStatus();
+    // Response API Key input handlers
+    if (responseApiKeyInput && saveResponseApiKeyBtn) {
+        // Load saved response API key
+        if (apiUsage.responseApiKey) {
+            responseApiKeyInput.value = '••••••••••••••••••••';
+            updateResponseAPIStatus();
         }
         
-        // Save API key
-        saveApiKeyBtn.addEventListener('click', async () => {
-            const newApiKey = apiKeyInput.value.trim();
+        // Save response API key
+        saveResponseApiKeyBtn.addEventListener('click', async () => {
+            const newApiKey = responseApiKeyInput.value.trim();
             if (newApiKey && newApiKey !== '••••••••••••••••••••') {
-                console.log('💾 Saving new API key...');
-                apiUsage.apiKey = newApiKey;
+                console.log('💾 Saving new response API key...');
+                apiUsage.responseApiKey = newApiKey;
                 
                 // Update status
-                if (apiTierInfo) apiTierInfo.textContent = '🔍 API analiz ediliyor...';
+                if (responseApiTierInfo) responseApiTierInfo.textContent = '🔍 Response API analiz ediliyor...';
                 
                 try {
                     // Detect tier with new API key
                     await detectAPITier();
                     
                     // Update UI
-                    apiKeyInput.value = '••••••••••••••••••••';
-                    updateAPIStatus();
+                    responseApiKeyInput.value = '••••••••••••••••••••';
+                    updateResponseAPIStatus();
                     updateLimitDisplay();
                     
-                    console.log('✅ API key saved and analyzed');
+                    console.log('✅ Response API key saved and analyzed');
                     
                 } catch (error) {
-                    console.error('❌ API key validation failed:', error);
-                    if (apiTierInfo) {
-                        apiTierInfo.textContent = '❌ Geçersiz API key';
+                    console.error('❌ Response API key validation failed:', error);
+                    if (responseApiTierInfo) {
+                        responseApiTierInfo.textContent = '❌ Geçersiz Response API key';
                     }
                     // Don't save invalid API key
-                    apiUsage.apiKey = '';
+                    apiUsage.responseApiKey = '';
                 }
                 
                 saveAPIUsage();
@@ -1360,9 +1378,42 @@ function initializeSettings() {
         });
         
         // Clear API key option
-        apiKeyInput.addEventListener('focus', () => {
-            if (apiKeyInput.value === '••••••••••••••••••••') {
-                apiKeyInput.value = '';
+        responseApiKeyInput.addEventListener('focus', () => {
+            if (responseApiKeyInput.value === '••••••••••••••••••••') {
+                responseApiKeyInput.value = '';
+            }
+        });
+    }
+    
+    // TTS API Key input handlers
+    if (ttsApiKeyInput && saveTtsApiKeyBtn) {
+        // Load saved TTS API key
+        if (apiUsage.ttsApiKey) {
+            ttsApiKeyInput.value = '••••••••••••••••••••';
+            updateTTSAPIStatus();
+        }
+        
+        // Save TTS API key
+        saveTtsApiKeyBtn.addEventListener('click', async () => {
+            const newApiKey = ttsApiKeyInput.value.trim();
+            if (newApiKey && newApiKey !== '••••••••••••••••••••') {
+                console.log('💾 Saving new TTS API key...');
+                apiUsage.ttsApiKey = newApiKey;
+                
+                // Update UI
+                ttsApiKeyInput.value = '••••••••••••••••••••';
+                updateTTSAPIStatus();
+                updateLimitDisplay();
+                    
+                console.log('✅ TTS API key saved');
+                    
+            }
+        });
+        
+        // Clear API key option
+        ttsApiKeyInput.addEventListener('focus', () => {
+            if (ttsApiKeyInput.value === '••••••••••••••••••••') {
+                ttsApiKeyInput.value = '';
             }
         });
     }
@@ -1370,9 +1421,9 @@ function initializeSettings() {
     console.log('⚙️ Settings initialized');
 }
 
-function updateAPIStatus() {
-    const apiTierInfo = document.getElementById('api-tier-info');
-    if (apiTierInfo && apiUsage.apiKey) {
+function updateResponseAPIStatus() {
+    const apiTierInfo = document.getElementById('response-api-tier-info');
+    if (apiTierInfo && apiUsage.responseApiKey) {
         const tier = apiUsage.tier.toUpperCase();
         const realUsage = apiUsage.realUsage.response;
         
@@ -1381,6 +1432,13 @@ function updateAPIStatus() {
         } else {
             apiTierInfo.textContent = `✅ ${tier} Tier aktif`;
         }
+    }
+}
+
+function updateTTSAPIStatus() {
+    const apiTierInfo = document.getElementById('tts-api-tier-info');
+    if (apiTierInfo && apiUsage.ttsApiKey) {
+        apiTierInfo.textContent = `✅ TTS API aktif`;
     }
 }
 
