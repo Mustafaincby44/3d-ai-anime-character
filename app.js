@@ -203,13 +203,14 @@ function updateMouthAnimation() {
             
             if (count > 0) {
                 const average = sum / count;
-                targetMouthOpen = Math.min(0.4, (average / 128.0) * 0.6);
+                // Reduced intensity - prevent screaming mouth
+                targetMouthOpen = Math.min(0.25, (average / 128.0) * 0.35);
             } else {
                 targetMouthOpen = 0.0;
             }
         } else {
-            // Fallback animation when no audio
-            targetMouthOpen = 0.1 + (Math.sin(Date.now() * 0.01) * 0.3);
+            // Fallback animation when no audio - reduced intensity
+            targetMouthOpen = 0.05 + (Math.sin(Date.now() * 0.008) * 0.15);
         }
     } else {
         // Force mouth closed in all other states
@@ -371,9 +372,11 @@ async function generateTTS(text) {
 function playAudio(audioBuffer) {
     if (!audioContext || !audioBuffer) return;
     
-    // Resume audio context if suspended
+    // Aggressively resume audio context
     if (audioContext.state === 'suspended') {
-        audioContext.resume();
+        audioContext.resume().then(() => {
+            console.log('🔊 Audio context resumed immediately');
+        });
     }
     
     // Create audio source
@@ -400,9 +403,9 @@ function playAudio(audioBuffer) {
         }
     };
     
-    // Start audio immediately
+    // Start audio immediately with zero delay
     source.start(0);
-    console.log('Audio started playing immediately');
+    console.log('🔊 Audio started playing with zero delay');
     
     // Add timeout protection in case onended doesn't fire
     const audioDuration = audioBuffer.duration * 1000; // Convert to milliseconds
@@ -488,13 +491,25 @@ function stopSpeech() {
     // Update state
     setAppState('idle');
     
-    // Double-check mouth is closed after state change
+    // Triple-check mouth is closed after state change
     setTimeout(() => {
         if (vrm?.expressionManager && !isSpeaking) {
             vrm.expressionManager.setValue('aa', 0);
-            console.log('Double-checked: mouth is closed');
+            mouthOpenValue = 0.0;
+            targetMouthOpen = 0.0;
+            console.log('🔧 Triple-checked: mouth forced closed');
         }
     }, 50);
+    
+    // Additional safety check after 200ms
+    setTimeout(() => {
+        if (vrm?.expressionManager && appState === 'idle') {
+            vrm.expressionManager.setValue('aa', 0);
+            mouthOpenValue = 0.0;
+            targetMouthOpen = 0.0;
+            console.log('🔧 Safety check: mouth ensured closed');
+        }
+    }, 200);
     
     console.log('Speech stopped, state reset to idle');
 }
@@ -655,7 +670,7 @@ function initializeBrainSystem() {
     console.log('🧠 Brain system integrated with app.js!');
 }
 
-// Self-talk handler - ENHANCED for new brain system
+// Self-talk handler - FIXED for brain system
 async function handleBrainSelfTalk(thought, trigger) {
     // Skip if currently speaking or thinking
     if (appState === 'speaking' || appState === 'thinking') {
@@ -671,17 +686,33 @@ async function handleBrainSelfTalk(thought, trigger) {
         // Set emotion based on thought
         setEmotion(thought.emotion);
         
-        // Add slight delay for more natural feeling
-        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+        // Minimal delay - no artificial waiting
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Speak the thought
+        // Speak the thought with proper cleanup
         await speakText(thought.text);
+        
+        // Ensure mouth is closed after speaking
+        setTimeout(() => {
+            if (vrm?.expressionManager && appState === 'idle') {
+                vrm.expressionManager.setValue('aa', 0);
+                mouthOpenValue = 0.0;
+                targetMouthOpen = 0.0;
+                console.log('🔧 Force closed mouth after self-talk');
+            }
+        }, 500);
         
         console.log(`✅ Self-talk completed: ${thought.type}`);
         
     } catch (error) {
         console.error('❌ Self-talk failed:', error);
         setAppState('idle');
+        // Force mouth closed on error
+        if (vrm?.expressionManager) {
+            vrm.expressionManager.setValue('aa', 0);
+            mouthOpenValue = 0.0;
+            targetMouthOpen = 0.0;
+        }
     }
 }
 
