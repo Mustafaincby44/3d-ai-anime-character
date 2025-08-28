@@ -1048,7 +1048,22 @@ function playWavFile(wavUrl) {
             
             // Clean up WAV URL
             URL.revokeObjectURL(wavUrl);
+            
+            // IMPORTANT: Stop speech and return to idle state
+            if (isSpeaking) {
+                console.log('🔄 Speech ended, returning to idle state');
+                stopSpeech();
+            }
         };
+        
+        // Safety timeout - force stop speech after audio duration + buffer
+        const audioDuration = audio.duration * 1000; // Convert to milliseconds
+        setTimeout(() => {
+            if (isSpeaking && currentAudioSource === audio) {
+                console.log('⏰ Safety timeout reached, forcing speech stop');
+                stopSpeech();
+            }
+        }, audioDuration + 1000); // Add 1 second buffer
         
         // Audio error event
         audio.onerror = (error) => {
