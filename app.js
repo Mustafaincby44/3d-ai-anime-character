@@ -704,47 +704,37 @@ async function speakText(text) {
     
     try {
         // Try TTS first
-        console.log('🎵 Attempting TTS generation...');
+        console.log('🎵 Attempting Gemini TTS generation...');
         const audioBuffer = await generateTTS(text);
         if (audioBuffer) {
-            console.log('✅ TTS successful, playing audio');
+            console.log('✅ Gemini TTS successful, playing audio');
             playAudio(audioBuffer);
             return;
         } else {
-            console.log('❌ TTS returned null/undefined - using fallback');
-            throw new Error('TTS returned no audio buffer');
+            console.log('❌ Gemini TTS returned null - using text simulation');
+            throw new Error('Gemini TTS returned no audio buffer');
         }
     } catch (error) {
-        console.error('❌ TTS failed, using fallback:', error);
+        console.error('❌ Gemini TTS failed, using text simulation:', error);
         
         // Check if it's a rate limit error (429)
         if (error.message.includes('429')) {
-            console.log('🚫 API rate limit exceeded - using text simulation');
-            updateStatus('API limit aşıldı - metin simülasyonu kullanılıyor...');
+            console.log('🚫 Gemini TTS rate limit exceeded - using text simulation');
+            updateStatus('Gemini TTS limit aşıldı - metin simülasyonu kullanılıyor...');
         } else {
-            console.log('⚠️ TTS error - using text simulation');
-            updateStatus('TTS hatası - metin simülasyonu kullanılıyor...');
+            console.log('⚠️ Gemini TTS error - using text simulation');
+            updateStatus('Gemini TTS hatası - metin simülasyonu kullanılıyor...');
         }
         
-        // Try Web Speech API fallback
-        console.log('🗣️ Trying Web Speech API fallback...');
-        if (tryWebSpeechAPI(text)) {
-            return;
-        }
-        
-        // Final fallback: simulate speech
+        // Fallback: simulate speech
         console.log('🎭 Using simulated speech for:', text);
         simulateSpeech(text);
         return;
     }
-    
-    // Fallback: simulate speech without audio
-    console.log('🎭 No audio available - using simulated speech');
-    simulateSpeech(text);
 }
 
 async function generateTTS(text) {
-    console.log('🎵 Starting TTS generation with:', currentTTSModel);
+    console.log('🎵 Starting Gemini TTS generation with:', currentTTSModel);
     
     // Track TTS API usage
     trackAPIUsage('tts');
@@ -769,7 +759,7 @@ async function generateTTS(text) {
             }
         };
 
-        console.log('🎵 TTS Request payload:', JSON.stringify(payload, null, 2));
+        console.log('🎵 Gemini TTS Request payload:', JSON.stringify(payload, null, 2));
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -782,7 +772,7 @@ async function generateTTS(text) {
         // Track TTS usage from response headers
         trackAPIUsage('tts', response);
 
-        console.log('🎵 TTS Response status:', response.status);
+        console.log('🎵 Gemini TTS Response status:', response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -791,12 +781,12 @@ async function generateTTS(text) {
         }
 
         const result = await response.json();
-        console.log('🎵 TTS Response result:', result);
+        console.log('🎵 Gemini TTS Response result:', result);
         
         // Check if we have audio data
         if (result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
             const audioData = result.candidates[0].content.parts[0].inlineData.data;
-            console.log('🎵 Audio data received, length:', audioData.length);
+            console.log('🎵 Gemini TTS audio data received, length:', audioData.length);
             
             // Convert base64 to audio buffer
             const binaryString = atob(audioData);
@@ -805,18 +795,18 @@ async function generateTTS(text) {
                 bytes[i] = binaryString.charCodeAt(i);
             }
             
-            console.log('🎵 Decoding audio buffer...');
+            console.log('🎵 Gemini TTS decoding audio buffer...');
             const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
-            console.log('✅ TTS audio ready to play');
+            console.log('✅ Gemini TTS audio ready to play');
             return audioBuffer;
             
         } else {
-            console.error('❌ No audio data in TTS response');
+            console.error('❌ No audio data in Gemini TTS response');
             return null;
         }
         
     } catch (error) {
-        console.error('❌ TTS generation failed:', error);
+        console.error('❌ Gemini TTS generation failed:', error);
         return null;
     }
 }
@@ -872,50 +862,7 @@ function playAudio(audioBuffer) {
     }, audioDuration + 500); // Reduced buffer to 500ms
 }
 
-function tryWebSpeechAPI(text) {
-    if ('speechSynthesis' in window) {
-        console.log('🗣️ Using Web Speech API');
-        
-        try {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR';
-            utterance.rate = 0.9;
-            utterance.pitch = 1.1;
-            utterance.volume = volumeLevel;
-            
-            utterance.onstart = () => {
-                console.log('🗣️ Web Speech started');
-                updateStatus('Konuşuyor (Web Speech)...');
-                animateMouth(text);
-            };
-            
-            utterance.onend = () => {
-                console.log('🗣️ Web Speech ended');
-                resetMouthState();
-                updateStatus('Dinliyorum...');
-                setTimeout(() => {
-                    resetSystemState();
-                }, 1000);
-            };
-            
-            utterance.onerror = (event) => {
-                console.error('❌ Web Speech error:', event.error);
-                resetMouthState();
-                simulateSpeech(text);
-            };
-            
-            speechSynthesis.speak(utterance);
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Web Speech API error:', error);
-            return false;
-        }
-    }
-    
-    console.log('❌ Web Speech API not available');
-    return false;
-}
+
 
 function simulateSpeech(text) {
     const wordCount = text.split(' ').length;
