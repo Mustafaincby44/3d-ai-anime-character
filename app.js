@@ -28,6 +28,38 @@ let autoTalkEnabled = false; // Default OFF
 let systemReady = false;
 let messageCount = 0;
 
+// API Settings & Tracking
+let currentResponseModel = 'gemini-2.5-flash-preview-05-20';
+let currentTTSModel = 'gemini-2.5-flash-preview-tts';
+
+// API Rate Limits (Google AI Studio)
+const API_LIMITS = {
+    // Free Tier Limits
+    free: {
+        'gemini-2.5-flash-preview-05-20': { rpm: 15, rpd: 1500, name: 'Gemini 2.5 Flash' },
+        'gemini-1.5-pro': { rpm: 2, rpd: 50, name: 'Gemini 1.5 Pro' },
+        'gemini-1.5-flash': { rpm: 15, rpd: 1500, name: 'Gemini 1.5 Flash' },
+        'gemini-2.5-flash-preview-tts': { rpm: 10, rpd: 100, name: 'Gemini 2.5 Flash TTS' },
+        'gemini-1.5-pro-tts': { rpm: 5, rpd: 50, name: 'Gemini 1.5 Pro TTS' }
+    },
+    // Paid Tier Limits (estimate)
+    paid: {
+        'gemini-2.5-flash-preview-05-20': { rpm: 1000, rpd: 50000, name: 'Gemini 2.5 Flash' },
+        'gemini-1.5-pro': { rpm: 360, rpd: 10000, name: 'Gemini 1.5 Pro' },
+        'gemini-1.5-flash': { rpm: 1000, rpd: 50000, name: 'Gemini 1.5 Flash' },
+        'gemini-2.5-flash-preview-tts': { rpm: 300, rpd: 10000, name: 'Gemini 2.5 Flash TTS' },
+        'gemini-1.5-pro-tts': { rpm: 100, rpd: 5000, name: 'Gemini 1.5 Pro TTS' }
+    }
+};
+
+// Usage tracking
+let apiUsage = {
+    responseRequests: 0,
+    ttsRequests: 0,
+    lastReset: new Date().toDateString(),
+    tier: 'free' // Will be detected
+};
+
 // Audio System
 let audioContext = null;
 let analyser = null;
@@ -60,6 +92,9 @@ function init() {
     
     // Initialize Brain System
     initializeBrainSystem();
+    
+    // Initialize API tracking
+    initializeAPITracking();
     
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 1.0));
@@ -253,6 +288,116 @@ function updateMouthAnimation() {
     }
 }
 
+// ===== API TRACKING FUNCTIONS =====
+async function detectAPITier() {
+    try {
+        // Test with a simple request to determine tier
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        const testPayload = {
+            contents: [{ parts: [{ text: "test" }] }]
+        };
+
+        const response = await fetch(testUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testPayload)
+        });
+
+        // Check rate limit headers to determine tier
+        const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+        const rateLimitLimit = response.headers.get('x-ratelimit-limit');
+        
+        if (rateLimitLimit) {
+            const limit = parseInt(rateLimitLimit);
+            // Free tier typically has lower limits
+            apiUsage.tier = limit > 1000 ? 'paid' : 'free';
+        } else {
+            // Default assumption
+            apiUsage.tier = 'free';
+        }
+        
+        console.log(`🔍 API Tier detected: ${apiUsage.tier}`);
+        return apiUsage.tier;
+        
+    } catch (error) {
+        console.error('❌ Failed to detect API tier:', error);
+        apiUsage.tier = 'free'; // Safe default
+        return 'free';
+    }
+}
+
+function trackAPIUsage(type) {
+    // Reset daily usage if needed
+    const today = new Date().toDateString();
+    if (apiUsage.lastReset !== today) {
+        apiUsage.responseRequests = 0;
+        apiUsage.ttsRequests = 0;
+        apiUsage.lastReset = today;
+        console.log('📅 Daily usage reset');
+    }
+    
+    // Increment usage
+    if (type === 'response') {
+        apiUsage.responseRequests++;
+    } else if (type === 'tts') {
+        apiUsage.ttsRequests++;
+    }
+    
+    // Update UI
+    updateLimitDisplay();
+    
+    // Save to localStorage
+    saveAPIUsage();
+    
+    console.log(`📊 API Usage - Response: ${apiUsage.responseRequests}, TTS: ${apiUsage.ttsRequests}`);
+}
+
+function updateLimitDisplay() {
+    const tier = apiUsage.tier;
+    const responseLimits = API_LIMITS[tier][currentResponseModel];
+    const ttsLimits = API_LIMITS[tier][currentTTSModel];
+    
+    // Update top display
+    const topResponseUsed = document.getElementById('top-response-used');
+    const topResponseLimit = document.getElementById('top-response-limit');
+    const topTTSUsed = document.getElementById('top-tts-used');
+    const topTTSLimit = document.getElementById('top-tts-limit');
+    const topCurrentModel = document.getElementById('top-current-model');
+    
+    if (topResponseUsed) topResponseUsed.textContent = apiUsage.responseRequests;
+    if (topResponseLimit) topResponseLimit.textContent = responseLimits.rpd;
+    if (topTTSUsed) topTTSUsed.textContent = apiUsage.ttsRequests;
+    if (topTTSLimit) topTTSLimit.textContent = ttsLimits.rpd;
+    if (topCurrentModel) topCurrentModel.textContent = responseLimits.name;
+    
+    // Update settings display
+    const responseUsedSpan = document.getElementById('response-used');
+    const ttsUsedSpan = document.getElementById('tts-used');
+    
+    if (responseUsedSpan) responseUsedSpan.textContent = apiUsage.responseRequests;
+    if (ttsUsedSpan) ttsUsedSpan.textContent = apiUsage.ttsRequests;
+    
+    // Update limit info text
+    const responseLimitInfo = document.getElementById('response-limit-info');
+    const ttsLimitInfo = document.getElementById('tts-limit-info');
+    
+    if (responseLimitInfo) {
+        responseLimitInfo.innerHTML = `📊 ${tier.toUpperCase()}: ${responseLimits.rpd} istek/gün | Kullanılan: <span id="response-used">${apiUsage.responseRequests}</span>`;
+    }
+    
+    if (ttsLimitInfo) {
+        ttsLimitInfo.innerHTML = `📊 ${tier.toUpperCase()}: ${ttsLimits.rpd} istek/gün | Kullanılan: <span id="tts-used">${apiUsage.ttsRequests}</span>`;
+    }
+}
+
+function getCurrentLimits() {
+    const tier = apiUsage.tier;
+    return {
+        response: API_LIMITS[tier][currentResponseModel],
+        tts: API_LIMITS[tier][currentTTSModel]
+    };
+}
+
 // ===== SYSTEM RESET FUNCTIONS =====
 function resetMouthState() {
     console.log('🔄 Resetting mouth state');
@@ -348,7 +493,10 @@ async function handleUserInput() {
 }
 
 async function getAIResponse(prompt) {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+    // Track API usage
+    trackAPIUsage('response');
+    
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${API_KEY}`;
     
     const requestBody = {
         contents: [{
@@ -386,22 +534,29 @@ async function speakText(text) {
     
     try {
         // Try TTS first
+        console.log('🎵 Attempting TTS generation...');
         const audioBuffer = await generateTTS(text);
         if (audioBuffer) {
-            // Immediately start playing audio without delay
+            console.log('✅ TTS successful, playing audio');
             playAudio(audioBuffer);
             return;
+        } else {
+            console.log('❌ TTS returned null/undefined - using fallback');
+            throw new Error('TTS returned no audio buffer');
         }
     } catch (error) {
-        console.error('TTS failed, using fallback:', error);
+        console.error('❌ TTS failed, using fallback:', error);
         
         // Check if it's a rate limit error (429)
         if (error.message.includes('429')) {
             console.log('🚫 API rate limit exceeded - using text simulation');
             updateStatus('API limit aşıldı - metin simülasyonu kullanılıyor...');
+        } else {
+            console.log('⚠️ TTS error - using text simulation');
+            updateStatus('TTS hatası - metin simülasyonu kullanılıyor...');
         }
         
-        // Don't stop speech - use fallback instead
+        // Use fallback instead of stopping
         console.log('🎭 Using simulated speech for:', text);
         simulateSpeech(text);
         return;
@@ -414,10 +569,14 @@ async function speakText(text) {
 
 async function generateTTS(text) {
     console.log('Starting TTS generation...');
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+    
+    // Track TTS API usage
+    trackAPIUsage('tts');
+    
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${API_KEY}`;
     
     const payload = {
-        model: "gemini-2.5-flash-preview-tts",
+        model: currentTTSModel,
         contents: [{ parts: [{ text: text }] }],
         generationConfig: {
             responseModalities: ["AUDIO"],
@@ -788,8 +947,11 @@ async function getAIResponseWithBrain(userMessage) {
     // Process message through brain system
     const enhancedPrompt = window.brainSystem.processUserMessage(userMessage);
     
-    // Call Gemini API with enhanced prompt
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+    // Track API usage
+    trackAPIUsage('response');
+    
+    // Call Gemini API with enhanced prompt (use current model)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${API_KEY}`;
     
     const requestBody = {
         contents: [{
@@ -819,6 +981,38 @@ async function getAIResponseWithBrain(userMessage) {
     return JSON.parse(text.replaceAll("```json", "").replaceAll("```", "").trim());
 }
 
+// ===== API TRACKING INITIALIZATION =====
+async function initializeAPITracking() {
+    console.log('🔍 Initializing API tracking...');
+    
+    // Detect API tier
+    await detectAPITier();
+    
+    // Load saved usage from localStorage
+    const savedUsage = localStorage.getItem('apiUsage');
+    if (savedUsage) {
+        const parsed = JSON.parse(savedUsage);
+        const today = new Date().toDateString();
+        
+        // Only restore if same day
+        if (parsed.lastReset === today) {
+            apiUsage.responseRequests = parsed.responseRequests || 0;
+            apiUsage.ttsRequests = parsed.ttsRequests || 0;
+            console.log('📊 Restored daily usage from localStorage');
+        }
+    }
+    
+    // Update display
+    updateLimitDisplay();
+    
+    console.log('✅ API tracking initialized');
+}
+
+// Save usage to localStorage
+function saveAPIUsage() {
+    localStorage.setItem('apiUsage', JSON.stringify(apiUsage));
+}
+
 // ===== SETTINGS MANAGEMENT =====
 function initializeSettings() {
     // Get elements
@@ -828,6 +1022,8 @@ function initializeSettings() {
     const volumeSlider = document.getElementById('volume-slider');
     const volumeValue = document.getElementById('volume-value');
     const autoTalkToggle = document.getElementById('auto-talk-toggle');
+    const responseModelSelect = document.getElementById('response-model');
+    const ttsModelSelect = document.getElementById('tts-model');
     
     if (!settingsBtn || !settingsPanel) {
         console.error('❌ Settings elements not found');
@@ -884,6 +1080,24 @@ function initializeSettings() {
             }
             
             console.log(`🤖 Auto talk: ${autoTalkEnabled ? 'ON' : 'OFF'}`);
+        });
+    }
+    
+    // Response model selection
+    if (responseModelSelect) {
+        responseModelSelect.addEventListener('change', (e) => {
+            currentResponseModel = e.target.value;
+            console.log(`📝 Response model changed to: ${currentResponseModel}`);
+            updateLimitDisplay();
+        });
+    }
+    
+    // TTS model selection
+    if (ttsModelSelect) {
+        ttsModelSelect.addEventListener('change', (e) => {
+            currentTTSModel = e.target.value;
+            console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
+            updateLimitDisplay();
         });
     }
     
