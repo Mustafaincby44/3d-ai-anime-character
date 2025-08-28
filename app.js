@@ -48,6 +48,9 @@ function init() {
     camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
     camera.position.set(0.0, 1.3, 2.0);
     
+    // Initialize Brain System
+    initializeBrainSystem();
+    
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 1.0));
     scene.add(new THREE.HemisphereLight(0xffffbb, 0x080820, 2.0));
@@ -242,8 +245,15 @@ async function handleUserInput() {
     setAppState('thinking');
     
     try {
-        // Get AI response
-        const response = await getAIResponse(text);
+        // Use brain system for enhanced response
+        let response;
+        if (window.brainSystem && window.brainSystem.isInitialized) {
+            console.log('🧠 Using brain system for response');
+            response = await getAIResponseWithBrain(text);
+        } else {
+            console.log('⚠️ Brain system not available, using standard response');
+            response = await getAIResponse(text);
+        }
         
         // Set emotion
         setEmotion(response.duygu);
@@ -494,6 +504,9 @@ function setAppState(newState) {
     console.log(`State change: ${appState} -> ${newState}`);
     appState = newState;
     
+    // Update global state for brain system
+    window.appState = newState;
+    
     switch (newState) {
         case 'loading':
             updateStatus('Sahne hazırlanıyor...');
@@ -614,6 +627,107 @@ function pcmToWav(pcmData, sampleRate) {
     }
     
     return buffer;
+}
+
+// ===== BRAIN SYSTEM INTEGRATION =====
+function initializeBrainSystem() {
+    if (!window.brainSystem) {
+        console.error('❌ Brain system not loaded! Make sure brain.js is included.');
+        return;
+    }
+
+    // Set up brain system callbacks
+    window.brainSystem.setCallbacks(
+        // Self-talk callback
+        (thought, trigger) => {
+            console.log(`🧠 Self-talk: ${thought.text} (${trigger})`);
+            handleBrainSelfTalk(thought, trigger);
+        },
+        // Emotion change callback
+        (emotion, trigger) => {
+            console.log(`🧠 Emotion changed: ${emotion} (${trigger})`);
+            handleBrainEmotionChange(emotion, trigger);
+        }
+    );
+
+    // Initialize brain system
+    window.brainSystem.initialize();
+    console.log('🧠 Brain system integrated with app.js!');
+}
+
+// Self-talk handler - ENHANCED for new brain system
+async function handleBrainSelfTalk(thought, trigger) {
+    // Skip if currently speaking or thinking
+    if (appState === 'speaking' || appState === 'thinking') {
+        console.log('⏸️ Skipping self-talk - character is busy');
+        return;
+    }
+
+    try {
+        console.log(`🧠 Processing self-talk: "${thought.text}" (${trigger})`);
+        
+        setAppState('thinking');
+        
+        // Set emotion based on thought
+        setEmotion(thought.emotion);
+        
+        // Add slight delay for more natural feeling
+        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+        
+        // Speak the thought
+        await speakText(thought.text);
+        
+        console.log(`✅ Self-talk completed: ${thought.type}`);
+        
+    } catch (error) {
+        console.error('❌ Self-talk failed:', error);
+        setAppState('idle');
+    }
+}
+
+// Emotion change handler
+function handleBrainEmotionChange(emotion, trigger) {
+    // Update VRM emotion
+    setEmotion(emotion);
+    
+    // Log emotion change
+    console.log(`🎭 Character emotion: ${emotion} (caused by: ${trigger})`);
+}
+
+// Enhanced AI response with brain system
+async function getAIResponseWithBrain(userMessage) {
+    // Process message through brain system
+    const enhancedPrompt = window.brainSystem.processUserMessage(userMessage);
+    
+    // Call Gemini API with enhanced prompt
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+    
+    const requestBody = {
+        contents: [{
+            parts: [{
+                text: enhancedPrompt
+            }]
+        }]
+    };
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+        throw new Error(`API failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (!result.candidates?.[0]?.content?.parts?.[0]) {
+        throw new Error('Invalid API response');
+    }
+
+    const text = result.candidates[0].content.parts[0].text;
+    return JSON.parse(text.replaceAll("```json", "").replaceAll("```", "").trim());
 }
 
 // ===== START APPLICATION =====
