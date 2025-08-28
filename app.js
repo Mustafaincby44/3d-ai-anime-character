@@ -855,28 +855,54 @@ async function generateTTS(text) {
         // Check if we have audio data
         if (result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
             const audioData = result.candidates[0].content.parts[0].inlineData.data;
-            console.log('🎵 Gemini TTS audio data received, length:', audioData.length);
+            const mimeType = result.candidates[0].content.parts[0].inlineData.mimeType;
             
-            // Convert base64 to audio buffer
-            const binaryString = atob(audioData);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+            console.log('🎵 Gemini TTS audio data received:', {
+                length: audioData.length,
+                mimeType: mimeType || 'unknown'
+            });
+            
+            // Handle different audio formats from Gemini TTS
+            try {
+                // Try PCM to WAV conversion first (Gemini TTS usually sends PCM)
+                console.log('🎵 Attempting PCM to WAV conversion...');
+                
+                try {
+                    const wavBlob = base64PcmToWav(audioData, 24000, 1); // Gemini TTS default: 24kHz, mono
+                    console.log('✅ PCM converted to WAV successfully');
+                    
+                    // Create audio buffer from WAV
+                    const wavArrayBuffer = await wavBlob.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(wavArrayBuffer);
+                    audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                    
+                    return audioBuffer;
+                    
+                } catch (pcmError) {
+                    console.log('⚠️ PCM to WAV failed, trying direct decode:', pcmError.message);
+                    
+                    // Fallback: try direct decode as audio buffer
+                    const binaryString = atob(audioData);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    
+                    console.log('🎵 Attempting direct audio decode...');
+                    const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+                    console.log('✅ Audio decoded successfully from raw data');
+                    
+                    // Convert to WAV for consistent playback
+                    const wavBlob = await audioBufferToWav(audioBuffer);
+                    audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                    
+                    return audioBuffer;
+                }
+                
+            } catch (formatError) {
+                console.error('❌ Audio format handling failed:', formatError);
+                throw new Error(`Audio format handling failed: ${formatError.message}`);
             }
-            
-            console.log('🎵 Gemini TTS decoding audio buffer...');
-            const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
-            console.log('✅ Gemini TTS audio ready to play');
-            
-            // Save as WAV file
-            const wavBlob = await audioBufferToWav(audioBuffer);
-            const wavUrl = URL.createObjectURL(wavBlob);
-            console.log('💾 WAV file created:', wavUrl);
-            
-            // Store WAV URL for playback
-            audioBuffer.wavUrl = wavUrl;
-            
-            return audioBuffer;
             
         } else {
             console.error('❌ No audio data in Gemini TTS response');
@@ -1204,6 +1230,78 @@ function pcmToWav(pcmData, sampleRate) {
     }
     
     return buffer;
+}
+
+// NEW: Convert base64 PCM data to WAV for Gemini TTS
+function base64PcmToWav(base64Data, sampleRate = 24000, numChannels = 1) {
+    try {
+        console.log('🔄 Converting base64 PCM to WAV...');
+        console.log('📊 Input data:', {
+            base64Length: base64Data.length,
+            sampleRate,
+            channels: numChannels
+        });
+        
+        // Decode base64 to binary
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        
+        console.log('📊 Binary data extracted:', {
+            binaryLength: binaryString.length,
+            bytesLength: bytes.length
+        });
+        
+        // Check if data length is valid for 16-bit PCM
+        if (bytes.length % 2 !== 0) {
+            console.warn('⚠️ Odd number of bytes - might not be 16-bit PCM');
+        }
+        
+        // Convert to 16-bit PCM array
+        const pcmData = new Int16Array(bytes.buffer);
+        
+        console.log('📊 PCM data extracted:', {
+            originalBytes: bytes.length,
+            pcmSamples: pcmData.length,
+            sampleRate,
+            channels: numChannels,
+            duration: (pcmData.length / sampleRate).toFixed(2) + 's'
+        });
+        
+        // Validate PCM data
+        if (pcmData.length === 0) {
+            throw new Error('PCM data is empty');
+        }
+        
+        // Check for extreme values that might indicate corruption
+        const maxValue = Math.max(...pcmData);
+        const minValue = Math.min(...pcmData);
+        console.log('📊 PCM value range:', { min: minValue, max: maxValue });
+        
+        if (Math.abs(maxValue) > 32000 || Math.abs(minValue) > 32000) {
+            console.warn('⚠️ PCM values seem extreme - data might be corrupted');
+        }
+        
+        // Convert to WAV using our existing function
+        const wavBuffer = pcmToWav(pcmData, sampleRate);
+        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+        
+        console.log('✅ Base64 PCM to WAV conversion completed');
+        console.log('📊 WAV file size:', wavBlob.size, 'bytes');
+        
+        return wavBlob;
+        
+    } catch (error) {
+        console.error('❌ Base64 PCM to WAV conversion failed:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        throw error;
+    }
 }
 
 // ===== BRAIN SYSTEM INTEGRATION =====
