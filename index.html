@@ -42,6 +42,18 @@
         </div>
         
         <div class="settings-content">
+            <!-- API Key Input -->
+            <div class="setting-item">
+                <label for="api-key-input">Google AI Studio API Key</label>
+                <div class="api-key-container">
+                    <input type="password" id="api-key-input" placeholder="API key'inizi buraya girin..." class="api-key-input">
+                    <button id="save-api-key" class="save-btn">Kaydet</button>
+                </div>
+                <div class="api-status" id="api-status">
+                    <span id="api-tier-info">🔍 API analiz ediliyor...</span>
+                </div>
+            </div>
+
             <!-- Volume Control -->
             <div class="setting-item">
                 <label for="volume-slider">Ses Seviyesi</label>
@@ -55,9 +67,11 @@
             <div class="setting-item">
                 <label for="response-model">Cevap Modeli</label>
                 <select id="response-model" class="model-select">
-                    <option value="gemini-1.5-flash" selected>Gemini 1.5 Flash (Dengeli)</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Kaliteli)</option>
-                    <option value="gemini-1.0-pro">Gemini 1.0 Pro (Hızlı)</option>
+                    <option value="gemini-2.5-flash-lite" selected>Gemini 2.5 Flash Lite (1000 limit)</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (250 limit)</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (100 limit)</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (50 limit)</option>
+                    <option value="gemini-1.0-pro">Gemini 1.0 Pro (1500 limit)</option>
                 </select>
                 <div class="limit-info" id="response-limit-info">
                     📊 Günlük: 1500 istek | Kullanılan: <span id="response-used">0</span>
@@ -68,9 +82,11 @@
             <div class="setting-item">
                 <label for="tts-model">TTS Modeli</label>
                 <select id="tts-model" class="model-select">
-                    <option value="gemini-1.5-flash" selected>Gemini 1.5 Flash (TTS)</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (TTS)</option>
-                    <option value="gemini-1.0-pro">Gemini 1.0 Pro (TTS)</option>
+                    <option value="gemini-2.5-flash-lite" selected>Gemini 2.5 Flash Lite TTS (1000)</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash TTS (250)</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro TTS (100)</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash TTS (50)</option>
+                    <option value="gemini-1.0-pro">Gemini 1.0 Pro TTS (1500)</option>
                 </select>
                 <div class="limit-info" id="tts-limit-info">
                     📊 Günlük: 1500 istek | Kullanılan: <span id="tts-used">0</span>
