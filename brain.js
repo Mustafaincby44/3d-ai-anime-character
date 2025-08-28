@@ -106,6 +106,14 @@ const BRAIN_CONFIG = {
         intellectualLevel: 0.5,   // Entelektüel seviye (0-1)
         emotionalLevel: 0.8,      // Duygusal yoğunluk (0-1)
         playfulLevel: 0.6         // Oyunculuk seviyesi (0-1)
+    },
+    
+    // Self-talk configuration
+    selfTalk: {
+        emotionTriggerChance: 0.3,    // %30 şansla duygu değişiminde self-talk
+        baseInterval: 15000,          // 15 saniye temel interval
+        maxInterval: 60000,           // 60 saniye maksimum interval
+        minInterval: 8000             // 8 saniye minimum interval
     }
 };
 
