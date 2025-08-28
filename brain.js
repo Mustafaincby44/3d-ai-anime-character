@@ -136,6 +136,13 @@ class EmotionEngine {
     updateEmotionIntensity(delta) {
         const config = BRAIN_CONFIG.emotions[this.currentEmotion];
         
+        // Check if config exists
+        if (!config) {
+            console.warn(`⚠️ Emotion config not found for: ${this.currentEmotion}, using default decay`);
+            this.emotionIntensity = Math.max(0.1, this.emotionIntensity - 0.01 * delta);
+            return;
+        }
+        
         // Doğal azalma (decay)
         this.emotionIntensity = Math.max(0.1, this.emotionIntensity - config.decay * delta);
         
@@ -163,7 +170,15 @@ class EmotionEngine {
         });
 
         this.currentEmotion = newEmotion;
-        this.emotionIntensity = BRAIN_CONFIG.emotions[newEmotion].intensity;
+        
+        // Check if emotion config exists
+        if (BRAIN_CONFIG.emotions[newEmotion]) {
+            this.emotionIntensity = BRAIN_CONFIG.emotions[newEmotion].intensity;
+        } else {
+            console.warn(`⚠️ Emotion config not found for: ${newEmotion}, using default`);
+            this.emotionIntensity = 0.5; // Default intensity
+        }
+        
         this.lastEmotionChange = Date.now();
 
         console.log(`🎭 Emotion transition: ${this.emotionHistory[this.emotionHistory.length - 1].from} -> ${newEmotion} (${trigger})`);
@@ -176,6 +191,13 @@ class EmotionEngine {
     // Rastgele duygu geçişi
     triggerRandomEmotionTransition() {
         const currentConfig = BRAIN_CONFIG.emotions[this.currentEmotion];
+        
+        // Check if current emotion config exists
+        if (!currentConfig || !currentConfig.transitions) {
+            console.warn(`⚠️ Emotion config not found for: ${this.currentEmotion}, using default transitions`);
+            return this.transitionToEmotion('happy', 'fallback');
+        }
+        
         const possibleTransitions = currentConfig.transitions;
         
         if (possibleTransitions.length > 0) {
