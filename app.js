@@ -864,39 +864,85 @@ async function generateTTS(text) {
             
             // Handle different audio formats from Gemini TTS
             try {
-                // Try PCM to WAV conversion first (Gemini TTS usually sends PCM)
-                console.log('🎵 Attempting PCM to WAV conversion...');
-                
-                try {
-                    const wavBlob = base64PcmToWav(audioData, 24000, 1); // Gemini TTS default: 24kHz, mono
-                    console.log('✅ PCM converted to WAV successfully');
+                // Check for L16 PCM format (what Gemini TTS actually sends)
+                if (mimeType && mimeType.includes('audio/L16') && mimeType.includes('pcm')) {
+                    console.log('🎵 Detected L16 PCM format - extracting parameters...');
                     
-                    // Create audio buffer from WAV
-                    const wavArrayBuffer = await wavBlob.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(wavArrayBuffer);
-                    audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                    // Parse MIME type for sample rate and channels
+                    const rateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = rateMatch ? parseInt(rateMatch[1]) : 24000;
                     
-                    return audioBuffer;
+                    console.log('🎵 L16 PCM parameters:', { sampleRate, channels: 1 });
                     
-                } catch (pcmError) {
-                    console.log('⚠️ PCM to WAV failed, trying direct decode:', pcmError.message);
+                    try {
+                        // Convert L16 PCM to WAV
+                        const wavBlob = base64PcmToWav(audioData, sampleRate, 1);
+                        console.log('✅ L16 PCM converted to WAV successfully');
+                        
+                        // Create audio buffer from WAV
+                        const wavArrayBuffer = await wavBlob.arrayBuffer();
+                        const audioBuffer = await audioContext.decodeAudioData(wavArrayBuffer);
+                        audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                        
+                        return audioBuffer;
+                        
+                    } catch (l16Error) {
+                        console.error('❌ L16 PCM to WAV conversion failed:', l16Error);
+                        throw new Error('L16 PCM conversion failed');
+                    }
                     
-                    // Fallback: try direct decode as audio buffer
+                } else if (mimeType === 'audio/wav' || mimeType === 'audio/x-wav') {
+                    // Already WAV format - convert base64 to blob
+                    console.log('🎵 Audio is already WAV format');
                     const binaryString = atob(audioData);
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
                     }
                     
-                    console.log('🎵 Attempting direct audio decode...');
-                    const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
-                    console.log('✅ Audio decoded successfully from raw data');
+                    const wavBlob = new Blob([bytes.buffer], { type: 'audio/wav' });
+                    console.log('✅ WAV blob created from base64');
                     
-                    // Convert to WAV for consistent playback
-                    const wavBlob = await audioBufferToWav(audioBuffer);
+                    // Create audio buffer for playback
+                    const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
                     audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
                     
                     return audioBuffer;
+                    
+                } else {
+                    // Unknown format - try PCM to WAV conversion as fallback
+                    console.log('🎵 Unknown format, trying PCM to WAV conversion...');
+                    
+                    try {
+                        const wavBlob = base64PcmToWav(audioData, 24000, 1);
+                        console.log('✅ PCM converted to WAV successfully');
+                        
+                        const wavArrayBuffer = await wavBlob.arrayBuffer();
+                        const audioBuffer = await audioContext.decodeAudioData(wavArrayBuffer);
+                        audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                        
+                        return audioBuffer;
+                        
+                    } catch (pcmError) {
+                        console.log('⚠️ PCM to WAV failed, trying direct decode:', pcmError.message);
+                        
+                        // Final fallback: try direct decode
+                        const binaryString = atob(audioData);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        
+                        console.log('🎵 Attempting direct audio decode...');
+                        const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+                        console.log('✅ Audio decoded successfully from raw data');
+                        
+                        // Convert to WAV for consistent playback
+                        const wavBlob = await audioBufferToWav(audioBuffer);
+                        audioBuffer.wavUrl = URL.createObjectURL(wavBlob);
+                        
+                        return audioBuffer;
+                    }
                 }
                 
             } catch (formatError) {
