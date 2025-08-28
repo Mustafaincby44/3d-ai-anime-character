@@ -125,6 +125,48 @@ let analyser = null;
 let audioDataArray = null;
 let currentAudioSource = null;
 
+// WAV Conversion Function
+async function audioBufferToWav(audioBuffer) {
+    const numChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
+    
+    // WAV header (44 bytes)
+    const buffer = new ArrayBuffer(44 + length * numChannels * 2);
+    const view = new DataView(buffer);
+    
+    // RIFF header
+    view.setUint32(0, 0x52494646, false); // "RIFF"
+    view.setUint32(4, 36 + length * numChannels * 2, true); // File size
+    view.setUint32(8, 0x57415645, false); // "WAVE"
+    
+    // fmt chunk
+    view.setUint32(12, 0x666d7420, false); // "fmt "
+    view.setUint32(16, 16, true); // Chunk size
+    view.setUint16(20, 1, true); // Audio format (PCM)
+    view.setUint16(22, numChannels, true); // Number of channels
+    view.setUint32(24, sampleRate, true); // Sample rate
+    view.setUint32(28, sampleRate * numChannels * 2, true); // Byte rate
+    view.setUint16(32, numChannels * 2, true); // Block align
+    view.setUint16(34, 16, true); // Bits per sample
+    
+    // data chunk
+    view.setUint32(36, 0x64617461, false); // "data"
+    view.setUint32(40, length * numChannels * 2, true); // Data size
+    
+    // Audio data
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+        for (let channel = 0; channel < numChannels; channel++) {
+            const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            offset += 2;
+        }
+    }
+    
+    return new Blob([buffer], { type: 'audio/wav' });
+}
+
 // Mouth Animation
 let mouthOpenValue = 0.0;
 let targetMouthOpen = 0.0;
@@ -825,6 +867,15 @@ async function generateTTS(text) {
             console.log('🎵 Gemini TTS decoding audio buffer...');
             const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
             console.log('✅ Gemini TTS audio ready to play');
+            
+            // Save as WAV file
+            const wavBlob = await audioBufferToWav(audioBuffer);
+            const wavUrl = URL.createObjectURL(wavBlob);
+            console.log('💾 WAV file created:', wavUrl);
+            
+            // Store WAV URL for playback
+            audioBuffer.wavUrl = wavUrl;
+            
             return audioBuffer;
             
         } else {
@@ -841,6 +892,68 @@ async function generateTTS(text) {
 function playAudio(audioBuffer) {
     if (!audioContext || !audioBuffer) return;
     
+    // Check if we have WAV URL
+    if (audioBuffer.wavUrl) {
+        console.log('🎵 Playing WAV file from URL:', audioBuffer.wavUrl);
+        playWavFile(audioBuffer.wavUrl);
+        return;
+    }
+    
+    // Fallback to original audio buffer playback
+    console.log('🎵 Playing audio buffer directly');
+    playAudioBuffer(audioBuffer);
+}
+
+function playWavFile(wavUrl) {
+    // Create audio element for WAV playback
+    const audio = new Audio(wavUrl);
+    
+    // Set volume
+    const volumeSlider = document.getElementById('volume-slider');
+    if (volumeSlider) {
+        audio.volume = volumeSlider.value / 100;
+    }
+    
+    // Start audio analysis for mouth animation
+    startAudioAnalysis();
+    
+    // Play the audio
+    audio.play().then(() => {
+        console.log('🎵 WAV file playback started');
+        
+        // Set up audio analysis for mouth animation
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        
+        // Store current audio source
+        currentAudioSource = audio;
+        
+        // Audio ended event
+        audio.onended = () => {
+            console.log('🛑 WAV file playback ended');
+            stopAudioAnalysis();
+            currentAudioSource = null;
+            
+            // Clean up WAV URL
+            URL.revokeObjectURL(wavUrl);
+        };
+        
+        // Audio error event
+        audio.onerror = (error) => {
+            console.error('❌ WAV file playback error:', error);
+            stopAudioAnalysis();
+            currentAudioSource = null;
+        };
+        
+    }).catch(error => {
+        console.error('❌ Failed to play WAV file:', error);
+        stopAudioAnalysis();
+    });
+}
+
+function playAudioBuffer(audioBuffer) {
     // Aggressively resume audio context
     if (audioContext.state === 'suspended') {
         audioContext.resume().then(() => {
@@ -862,6 +975,12 @@ function playAudio(audioBuffer) {
     audioDataArray = new Uint8Array(analyser.frequencyBinCount);
     
     // Connect audio chain
+    source.connect(analyser);
+    analyser.stop = () => {
+        source.stop();
+        source.disconnect();
+    };
+    
     source.connect(analyser);
     analyser.connect(audioContext.destination);
     
