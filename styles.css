@@ -88,6 +88,61 @@ body:active {
 }
 
 /* ===== SETTINGS PANEL ===== */
+/* API Key Input Styling */
+.api-key-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.api-key-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #374151;
+    border-radius: 8px;
+    background: #1f2937;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.save-btn {
+    padding: 8px 16px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.save-btn:hover {
+    background: #5856eb;
+}
+
+.api-status {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #1f2937;
+    border-radius: 6px;
+    border-left: 3px solid #6366f1;
+}
+
+.api-status span {
+    color: #d1d5db;
+    font-size: 13px;
+}
+
 .settings-btn {
     position: fixed;
     top: 20px;
