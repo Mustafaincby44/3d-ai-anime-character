@@ -29,43 +29,6 @@
 - **Styling**: Tailwind CSS
 - **Audio**: Web Audio API
 
-## ⚙️ Kurulum
-
-1. **Repository'yi klonlayın**:
-   ```bash
-   git clone https://github.com/Mustafaincby44/3d-ai-anime-character.git
-   cd 3d-ai-anime-character
-   ```
-
-2. **API Key ayarlayın**:
-   - `app.js` dosyasında `API_KEY` değişkenini güncelleyin
-   - Google AI Studio'dan API key alın
-
-3. **Web sunucusu başlatın**:
-   ```bash
-   # Python ile
-   python -m http.server 8000
-   
-   # Node.js ile
-   npx serve .
-   
-   # VS Code Live Server eklentisi ile
-   ```
-
-4. **Tarayıcıda açın**:
-   ```
-   http://localhost:8000
-   ```
-
-## 🔑 API Key Kurulumu
-
-1. [Google AI Studio](https://aistudio.google.com/)'ya gidin
-2. Yeni bir API key oluşturun
-3. `app.js` dosyasında `API_KEY` değişkenini güncelleyin:
-
-```javascript
-const API_KEY = "YOUR_API_KEY_HERE";
-```
 
 ## 🎮 Kullanım
 
@@ -81,35 +44,6 @@ const API_KEY = "YOUR_API_KEY_HERE";
 - **Fallback**: TTS hatası durumunda simüle edilmiş ağız hareketi
 - **Durum Kontrolü**: Sadece konuşurken ağız açılır
 
-## 🐛 Sorun Giderme
-
-### Ağız Düşünürken Açılıyor
-- `app.js` dosyasında `updateMouthAnimation()` fonksiyonunu kontrol edin
-- `isThinking` ve `isSpeaking` flag'lerinin doğru ayarlandığından emin olun
-
-### Ses Çıkmıyor
-- Tarayıcı konsolunda hata mesajlarını kontrol edin
-- API key'in doğru olduğundan emin olun
-- Web Audio API desteğini kontrol edin
-
-### Model Yüklenmiyor
-- İnternet bağlantınızı kontrol edin
-- Fallback model otomatik olarak yüklenir
-
-## 📝 Geliştirme
-
-### CSS Değişiklikleri
-- `styles.css` dosyasını düzenleyin
-- CSS değişkenleri `:root` içinde tanımlanmıştır
-
-### JavaScript Değişiklikleri
-- `app.js` dosyasını düzenleyin
-- Modüler yapı sayesinde kolay geliştirme
-
-### Yeni Özellikler Ekleme
-1. `app.js` dosyasında yeni fonksiyonlar ekleyin
-2. `styles.css` dosyasında gerekli stilleri tanımlayın
-3. `index.html` dosyasında UI elementlerini ekleyin
 
 ## 🌟 Özellikler
 
@@ -121,15 +55,10 @@ const API_KEY = "YOUR_API_KEY_HERE";
 
 ## 📄 Lisans
 
-Bu proje MIT lisansı altında lisanslanmıştır.
+Bu proje " All Rights Reserved " lisansı altında lisanslanmıştır.
+Kaynak kodu Mustafa'nın izni olmadan kopyalanamaz, değiştirilemez veya dağıtılamaz.
+Yalnızca GitHub Pages (github.io) üzerinde yayınlanan sürümü kullanılabilir.
 
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'Add amazing feature'`)
-4. Push yapın (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
 
 ## 📞 İletişim
 
