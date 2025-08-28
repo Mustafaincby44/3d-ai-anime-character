@@ -30,7 +30,7 @@ let messageCount = 0;
 
 // API Settings & Tracking
 let currentResponseModel = 'gemini-2.5-flash-lite';
-let currentTTSModel = 'gemini-1.0-pro'; // Sadece bu model TTS destekliyor
+let currentTTSModel = 'gemini-1.5-flash'; // TTS için uygun model
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -1307,10 +1307,10 @@ function initializeSettings() {
             console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
             
             // Only allow TTS-compatible models
-            if (currentTTSModel !== 'gemini-1.0-pro') {
+            if (!['gemini-1.5-flash', 'gemini-1.5-pro'].includes(currentTTSModel)) {
                 console.log('⚠️ Warning: This model does not support TTS');
-                currentTTSModel = 'gemini-1.0-pro'; // Force back to TTS model
-                ttsModelSelect.value = 'gemini-1.0-pro';
+                currentTTSModel = 'gemini-1.5-flash'; // Force back to TTS model
+                ttsModelSelect.value = 'gemini-1.5-flash';
             }
             
             updateLimitDisplay();
