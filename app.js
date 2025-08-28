@@ -30,7 +30,7 @@ let messageCount = 0;
 
 // API Settings & Tracking
 let currentResponseModel = 'gemini-2.5-flash-lite';
-let currentTTSModel = 'gemini-2.5-flash-lite';
+let currentTTSModel = 'gemini-1.5-flash'; // TTS için uygun model
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -1305,6 +1305,12 @@ function initializeSettings() {
         ttsModelSelect.addEventListener('change', (e) => {
             currentTTSModel = e.target.value;
             console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
+            
+            // Check if selected model supports TTS
+            if (currentTTSModel.includes('2.5-flash-lite')) {
+                console.log('⚠️ Warning: This model may not support TTS');
+            }
+            
             updateLimitDisplay();
         });
     }
