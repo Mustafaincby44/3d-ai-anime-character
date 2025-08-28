@@ -159,6 +159,36 @@ body:active {
     border-left-color: #10b981 !important;
 }
 
+/* Voice Select */
+.voice-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    background: #1f2937;
+    color: white;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.voice-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.voice-select optgroup {
+    background: #374151;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.voice-select option {
+    background: #1f2937;
+    color: white;
+    padding: 4px 8px;
+}
+
 .settings-btn {
     position: fixed;
     top: 20px;
