@@ -13,6 +13,47 @@
 <body>
     <div id="canvas-container"></div>
     <div id="ui-container">
+        <!-- Settings Button -->
+        <div id="settings-button" class="settings-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <div class="settings-header">
+                <h3>Ayarlar</h3>
+                <button id="close-settings" class="close-btn">×</button>
+            </div>
+            
+            <div class="settings-content">
+                <!-- Volume Control -->
+                <div class="setting-item">
+                    <label for="volume-slider">Ses Seviyesi</label>
+                    <div class="slider-container">
+                        <input type="range" id="volume-slider" min="0" max="100" value="70" class="slider">
+                        <span id="volume-value">70%</span>
+                    </div>
+                </div>
+
+                <!-- Auto Talk Toggle -->
+                <div class="setting-item">
+                    <label for="auto-talk-toggle">Otomatik Konuşma</label>
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-talk-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="warning-text" id="auto-talk-warning">
+                        ⚠️ API limitinizi hızla bitirir. Ücretsiz API kullanıyorsanız dikkatli olun!
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="status-wrapper">
             <span id="status-text">Sahne hazırlanıyor...</span>
             <div id="thinking-indicator" class="thinking-dots ml-2 hidden">
