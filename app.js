@@ -29,32 +29,85 @@ let systemReady = false;
 let messageCount = 0;
 
 // API Settings & Tracking
-let currentResponseModel = 'gemini-1.5-flash';
-let currentTTSModel = 'gemini-1.5-flash';
+let currentResponseModel = 'gemini-2.5-flash-lite';
+let currentTTSModel = 'gemini-2.5-flash-lite';
 
-// API Rate Limits (Google AI Studio)
+// API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
-    // Free Tier Limits
+    // Free Tier Limits (Corrected)
     free: {
-        'gemini-1.5-flash': { rpm: 15, rpd: 1500, name: 'Gemini 1.5 Flash' },
-        'gemini-1.5-pro': { rpm: 2, rpd: 50, name: 'Gemini 1.5 Pro' },
+        'gemini-2.5-flash': { rpm: 15, rpd: 250, name: 'Gemini 2.5 Flash' },
+        'gemini-2.5-flash-lite': { rpm: 60, rpd: 1000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-1.5-flash': { rpm: 15, rpd: 50, name: 'Gemini 1.5 Flash' },
+        'gemini-1.5-pro': { rpm: 2, rpd: 100, name: 'Gemini 1.5 Pro' },
         'gemini-1.0-pro': { rpm: 60, rpd: 1500, name: 'Gemini 1.0 Pro' }
     },
-    // Paid Tier Limits (estimate)
-    paid: {
-        'gemini-1.5-flash': { rpm: 1000, rpd: 50000, name: 'Gemini 1.5 Flash' },
-        'gemini-1.5-pro': { rpm: 360, rpd: 10000, name: 'Gemini 1.5 Pro' },
+    // Paid Tier 1 Limits
+    tier1: {
+        'gemini-2.5-flash': { rpm: 1000, rpd: 10000, name: 'Gemini 2.5 Flash' },
+        'gemini-2.5-flash-lite': { rpm: 2000, rpd: 50000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-1.5-flash': { rpm: 1000, rpd: 5000, name: 'Gemini 1.5 Flash' },
+        'gemini-1.5-pro': { rpm: 360, rpd: 3000, name: 'Gemini 1.5 Pro' },
         'gemini-1.0-pro': { rpm: 1000, rpd: 30000, name: 'Gemini 1.0 Pro' }
+    },
+    // Enterprise Tier Limits
+    enterprise: {
+        'gemini-2.5-flash': { rpm: 10000, rpd: 1000000, name: 'Gemini 2.5 Flash' },
+        'gemini-2.5-flash-lite': { rpm: 20000, rpd: 2000000, name: 'Gemini 2.5 Flash Lite' },
+        'gemini-1.5-flash': { rpm: 10000, rpd: 500000, name: 'Gemini 1.5 Flash' },
+        'gemini-1.5-pro': { rpm: 5000, rpd: 100000, name: 'Gemini 1.5 Pro' },
+        'gemini-1.0-pro': { rpm: 10000, rpd: 1000000, name: 'Gemini 1.0 Pro' }
     }
 };
 
-// Usage tracking
+// Usage tracking - Persistent across page reloads
 let apiUsage = {
     responseRequests: 0,
     ttsRequests: 0,
     lastReset: new Date().toDateString(),
-    tier: 'free' // Will be detected
+    tier: 'free', // Will be detected
+    apiKey: '', // Will be set by user
+    realUsage: { // Actual API usage from headers
+        response: { used: 0, limit: 0 },
+        tts: { used: 0, limit: 0 }
+    }
 };
+
+// Load saved usage immediately
+function loadSavedUsage() {
+    const saved = localStorage.getItem('apiUsage');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            const today = new Date().toDateString();
+            
+            // Always load API key
+            if (parsed.apiKey) {
+                apiUsage.apiKey = parsed.apiKey;
+            }
+            
+            // Load usage only if same day
+            if (parsed.lastReset === today) {
+                apiUsage.responseRequests = parsed.responseRequests || 0;
+                apiUsage.ttsRequests = parsed.ttsRequests || 0;
+                apiUsage.tier = parsed.tier || 'free';
+                apiUsage.realUsage = parsed.realUsage || apiUsage.realUsage;
+                console.log('📊 Restored daily usage from localStorage');
+            } else {
+                // New day - reset counters but keep API key
+                apiUsage.responseRequests = 0;
+                apiUsage.ttsRequests = 0;
+                apiUsage.lastReset = today;
+                console.log('📅 New day - usage reset');
+            }
+        } catch (error) {
+            console.error('❌ Failed to load saved usage:', error);
+        }
+    }
+}
+
+// Initialize usage loading
+loadSavedUsage();
 
 // Audio System
 let audioContext = null;
@@ -288,11 +341,19 @@ function updateMouthAnimation() {
 
 // ===== API TRACKING FUNCTIONS =====
 async function detectAPITier() {
+    if (!apiUsage.apiKey) {
+        console.log('⚠️ No API key provided - cannot detect tier');
+        apiUsage.tier = 'free';
+        return 'free';
+    }
+
     try {
-        // Test with a simple request to determine tier
-        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        console.log('🔍 Analyzing API key and detecting tier...');
+        
+        // Test with a simple request to determine tier and get usage info
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiUsage.apiKey}`;
         const testPayload = {
-            contents: [{ parts: [{ text: "test" }] }]
+            contents: [{ parts: [{ text: "test tier detection" }] }]
         };
 
         const response = await fetch(testUrl, {
@@ -301,30 +362,65 @@ async function detectAPITier() {
             body: JSON.stringify(testPayload)
         });
 
-        // Check rate limit headers to determine tier
-        const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
-        const rateLimitLimit = response.headers.get('x-ratelimit-limit');
+        console.log('🔍 API Response status:', response.status);
+        console.log('🔍 API Response headers:', Object.fromEntries(response.headers.entries()));
+
+        // Check rate limit headers to get real usage and limits
+        const rateLimitRemaining = response.headers.get('x-ratelimit-remaining-requests');
+        const rateLimitLimit = response.headers.get('x-ratelimit-limit-requests');
+        const rateLimitUsed = response.headers.get('x-ratelimit-used-requests');
         
-        if (rateLimitLimit) {
-            const limit = parseInt(rateLimitLimit);
-            // Free tier typically has lower limits
-            apiUsage.tier = limit > 1000 ? 'paid' : 'free';
+        // Alternative header names
+        const remaining = rateLimitRemaining || response.headers.get('x-ratelimit-remaining');
+        const limit = rateLimitLimit || response.headers.get('x-ratelimit-limit');
+        const used = rateLimitUsed || response.headers.get('x-ratelimit-used');
+
+        if (limit) {
+            const limitValue = parseInt(limit);
+            const usedValue = used ? parseInt(used) : 0;
+            const remainingValue = remaining ? parseInt(remaining) : (limitValue - usedValue);
+            
+            console.log(`📊 Real API Usage - Used: ${usedValue}, Remaining: ${remainingValue}, Limit: ${limitValue}`);
+            
+            // Update real usage data
+            apiUsage.realUsage.response.used = usedValue;
+            apiUsage.realUsage.response.limit = limitValue;
+            
+            // Determine tier based on limits
+            if (limitValue >= 100000) {
+                apiUsage.tier = 'enterprise';
+            } else if (limitValue >= 3000) {
+                apiUsage.tier = 'tier1';
+            } else {
+                apiUsage.tier = 'free';
+            }
+            
+            console.log(`🎯 API Tier detected: ${apiUsage.tier} (limit: ${limitValue})`);
+            
         } else {
-            // Default assumption
+            console.log('⚠️ No rate limit headers found - assuming free tier');
             apiUsage.tier = 'free';
         }
         
-        console.log(`🔍 API Tier detected: ${apiUsage.tier}`);
+        // Check if API key is valid
+        if (!response.ok && response.status === 401) {
+            throw new Error('Invalid API key');
+        }
+        
+        saveAPIUsage();
         return apiUsage.tier;
         
     } catch (error) {
         console.error('❌ Failed to detect API tier:', error);
+        if (error.message.includes('Invalid API key')) {
+            throw error; // Re-throw for UI handling
+        }
         apiUsage.tier = 'free'; // Safe default
         return 'free';
     }
 }
 
-function trackAPIUsage(type) {
+function trackAPIUsage(type, response = null) {
     // Reset daily usage if needed
     const today = new Date().toDateString();
     if (apiUsage.lastReset !== today) {
@@ -334,7 +430,29 @@ function trackAPIUsage(type) {
         console.log('📅 Daily usage reset');
     }
     
-    // Increment usage
+    // Update real usage from API response headers if available
+    if (response && response.headers) {
+        const remaining = response.headers.get('x-ratelimit-remaining') || response.headers.get('x-ratelimit-remaining-requests');
+        const limit = response.headers.get('x-ratelimit-limit') || response.headers.get('x-ratelimit-limit-requests');
+        const used = response.headers.get('x-ratelimit-used') || response.headers.get('x-ratelimit-used-requests');
+        
+        if (limit) {
+            const limitValue = parseInt(limit);
+            const usedValue = used ? parseInt(used) : (limitValue - parseInt(remaining || 0));
+            
+            if (type === 'response') {
+                apiUsage.realUsage.response.used = usedValue;
+                apiUsage.realUsage.response.limit = limitValue;
+            } else if (type === 'tts') {
+                apiUsage.realUsage.tts.used = usedValue;
+                apiUsage.realUsage.tts.limit = limitValue;
+            }
+            
+            console.log(`📊 Real API Usage Updated - ${type}: ${usedValue}/${limitValue}`);
+        }
+    }
+    
+    // Increment local usage counter
     if (type === 'response') {
         apiUsage.responseRequests++;
     } else if (type === 'tts') {
@@ -352,8 +470,18 @@ function trackAPIUsage(type) {
 
 function updateLimitDisplay() {
     const tier = apiUsage.tier;
-    const responseLimits = API_LIMITS[tier][currentResponseModel];
-    const ttsLimits = API_LIMITS[tier][currentTTSModel] || responseLimits; // Use same model for TTS
+    const responseLimits = API_LIMITS[tier] && API_LIMITS[tier][currentResponseModel] 
+        ? API_LIMITS[tier][currentResponseModel] 
+        : { rpm: 0, rpd: 0, name: 'Unknown Model' };
+    const ttsLimits = API_LIMITS[tier] && API_LIMITS[tier][currentTTSModel] 
+        ? API_LIMITS[tier][currentTTSModel] 
+        : responseLimits;
+    
+    // Use real usage data if available, otherwise use local counters
+    const responseUsed = apiUsage.realUsage.response.used > 0 ? apiUsage.realUsage.response.used : apiUsage.responseRequests;
+    const responseLimit = apiUsage.realUsage.response.limit > 0 ? apiUsage.realUsage.response.limit : responseLimits.rpd;
+    const ttsUsed = apiUsage.realUsage.tts.used > 0 ? apiUsage.realUsage.tts.used : apiUsage.ttsRequests;
+    const ttsLimit = apiUsage.realUsage.tts.limit > 0 ? apiUsage.realUsage.tts.limit : ttsLimits.rpd;
     
     // Update top display
     const topResponseUsed = document.getElementById('top-response-used');
@@ -362,10 +490,10 @@ function updateLimitDisplay() {
     const topTTSLimit = document.getElementById('top-tts-limit');
     const topCurrentModel = document.getElementById('top-current-model');
     
-    if (topResponseUsed) topResponseUsed.textContent = apiUsage.responseRequests;
-    if (topResponseLimit) topResponseLimit.textContent = responseLimits.rpd;
-    if (topTTSUsed) topTTSUsed.textContent = apiUsage.ttsRequests;
-    if (topTTSLimit) topTTSLimit.textContent = ttsLimits.rpd;
+    if (topResponseUsed) topResponseUsed.textContent = responseUsed;
+    if (topResponseLimit) topResponseLimit.textContent = responseLimit;
+    if (topTTSUsed) topTTSUsed.textContent = ttsUsed;
+    if (topTTSLimit) topTTSLimit.textContent = ttsLimit;
     if (topCurrentModel) topCurrentModel.textContent = responseLimits.name;
     
     // Update settings display
@@ -449,6 +577,13 @@ async function handleUserInput() {
         return;
     }
     
+    // Check if API key is provided
+    if (!apiUsage.apiKey) {
+        updateStatus('⚠️ API key gerekli! Lütfen ayarlardan API key girin.');
+        console.log('❌ No API key provided');
+        return;
+    }
+    
     userInput.value = '';
     messageCount++;
     console.log(`📨 Processing message #${messageCount}: "${text}"`);
@@ -494,7 +629,7 @@ async function getAIResponse(prompt) {
     // Track API usage
     trackAPIUsage('response');
     
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.apiKey}`;
     
     const requestBody = {
         contents: [{
@@ -579,7 +714,7 @@ async function generateTTS(text) {
     
     try {
         // Use the multimodal API for speech generation
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${API_KEY}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.apiKey}`;
         
         const payload = {
             contents: [{ 
@@ -1027,7 +1162,7 @@ async function getAIResponseWithBrain(userMessage) {
     trackAPIUsage('response');
     
     // Call Gemini API with enhanced prompt (use current model)
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${API_KEY}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.apiKey}`;
     
     const requestBody = {
         contents: [{
@@ -1080,6 +1215,7 @@ async function initializeAPITracking() {
     
     // Update display
     updateLimitDisplay();
+    updateAPIStatus();
     
     console.log('✅ API tracking initialized');
 }
@@ -1100,6 +1236,10 @@ function initializeSettings() {
     const autoTalkToggle = document.getElementById('auto-talk-toggle');
     const responseModelSelect = document.getElementById('response-model');
     const ttsModelSelect = document.getElementById('tts-model');
+    const apiKeyInput = document.getElementById('api-key-input');
+    const saveApiKeyBtn = document.getElementById('save-api-key');
+    const apiStatusDiv = document.getElementById('api-status');
+    const apiTierInfo = document.getElementById('api-tier-info');
     
     if (!settingsBtn || !settingsPanel) {
         console.error('❌ Settings elements not found');
@@ -1177,7 +1317,71 @@ function initializeSettings() {
         });
     }
     
+    // API Key input handlers
+    if (apiKeyInput && saveApiKeyBtn) {
+        // Load saved API key
+        if (apiUsage.apiKey) {
+            apiKeyInput.value = '••••••••••••••••••••';
+            updateAPIStatus();
+        }
+        
+        // Save API key
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const newApiKey = apiKeyInput.value.trim();
+            if (newApiKey && newApiKey !== '••••••••••••••••••••') {
+                console.log('💾 Saving new API key...');
+                apiUsage.apiKey = newApiKey;
+                
+                // Update status
+                if (apiTierInfo) apiTierInfo.textContent = '🔍 API analiz ediliyor...';
+                
+                try {
+                    // Detect tier with new API key
+                    await detectAPITier();
+                    
+                    // Update UI
+                    apiKeyInput.value = '••••••••••••••••••••';
+                    updateAPIStatus();
+                    updateLimitDisplay();
+                    
+                    console.log('✅ API key saved and analyzed');
+                    
+                } catch (error) {
+                    console.error('❌ API key validation failed:', error);
+                    if (apiTierInfo) {
+                        apiTierInfo.textContent = '❌ Geçersiz API key';
+                    }
+                    // Don't save invalid API key
+                    apiUsage.apiKey = '';
+                }
+                
+                saveAPIUsage();
+            }
+        });
+        
+        // Clear API key option
+        apiKeyInput.addEventListener('focus', () => {
+            if (apiKeyInput.value === '••••••••••••••••••••') {
+                apiKeyInput.value = '';
+            }
+        });
+    }
+    
     console.log('⚙️ Settings initialized');
+}
+
+function updateAPIStatus() {
+    const apiTierInfo = document.getElementById('api-tier-info');
+    if (apiTierInfo && apiUsage.apiKey) {
+        const tier = apiUsage.tier.toUpperCase();
+        const realUsage = apiUsage.realUsage.response;
+        
+        if (realUsage.limit > 0) {
+            apiTierInfo.innerHTML = `✅ ${tier} Tier | Kullanım: ${realUsage.used}/${realUsage.limit}`;
+        } else {
+            apiTierInfo.textContent = `✅ ${tier} Tier aktif`;
+        }
+    }
 }
 
 // Apply volume to audio buffer
