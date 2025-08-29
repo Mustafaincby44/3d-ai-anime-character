@@ -1,73 +1,139 @@
-# 3D AI Anime Character
+# 3D AI Anime Character Chatbot
 
-3D anime karakteri ile etkileşimli AI sohbet uygulaması. Karakter, Gemini 2.5 Flash API kullanarak yanıt üretir ve Gemini 2.5 Flash TTS ile konuşur.
+Bu proje, 3D anime karakteri ile konuşabilen, Edge TTS ve Gemini AI destekli gelişmiş bir chatbot uygulamasıdır.
 
-## 🚀 Özellikler
+## ✨ Özellikler
 
-- **3D VRM Model**: Three.js ve Three-VRM ile 3D anime karakteri
-- **AI Sohbet**: Gemini 2.5 Flash ile akıllı yanıtlar
-- **Ses Sentezi**: Gemini 2.5 Flash TTS ile doğal konuşma
-- **Ağız Senkronizasyonu**: Ses analizi ile gerçek zamanlı ağız animasyonu
-- **Duygu Sistemi**: Karakterin yüz ifadeleri (mutlu/üzgün)
-- **Responsive UI**: Modern ve kullanıcı dostu arayüz
+- **3D Anime Karakter**: VRM formatında 3D anime kız modeli
+- **Edge TTS**: Microsoft'un ücretsiz, sınırsız TTS servisi
+- **Gemini AI**: Google'ın gelişmiş AI modeli ile akıllı konuşma
+- **Çok Dilli Destek**: Türkçe, İngilizce, Japonca, Korece, Çince ve daha fazlası
+- **Ağız Animasyonu**: Gerçek zamanlı ses analizi ile ağız hareketi
+- **Duygu Sistemi**: Karakterin duygularını ifade etme
+- **Brain System**: Gelişmiş beyin sistemi entegrasyonu
+- **API Takibi**: Kullanım limitleri ve tier yönetimi
 
-## 📁 Proje Yapısı
+## 🚀 Kurulum
+
+### 1. Python Backend (Edge TTS)
+
+```bash
+# Gerekli paketleri yükle
+pip install -r requirements.txt
+
+# Edge TTS sunucusunu başlat
+python tts_server.py
+```
+
+Sunucu `http://localhost:5000` adresinde çalışacaktır.
+
+### 2. Web Uygulaması
+
+```bash
+# Projeyi bir web sunucusunda çalıştır
+# Örnek: Python HTTP sunucusu
+python -m http.server 8000
+
+# Veya Live Server (VS Code) kullan
+```
+
+## 🎵 TTS Modelleri
+
+### Edge TTS (Varsayılan)
+- **Ücretsiz ve sınırsız**
+- **10 dil desteği**: Türkçe, İngilizce, Japonca, Korece, Çince, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça
+- **Her dil için erkek/kadın ses seçenekleri**
+- **Ses hızı ayarlanabilir** (0.5x - 2.0x)
+
+### Gemini TTS
+- **Günlük 500 istek limiti**
+- **Yüksek kaliteli AI ses**
+- **Çeşitli ses seçenekleri**
+
+## 🌍 Desteklenen Diller
+
+| Dil | Kod | Sesler |
+|-----|-----|--------|
+| Türkçe | `tr` | Emel (K), Ahmet (E) |
+| İngilizce | `en` | Jenny (K), Guy (E), Aria (K) |
+| Japonca | `ja` | Nanami (K), Keita (E) |
+| Korece | `ko` | Sun-Hi (K), InJoon (E) |
+| Çince | `zh` | Xiaoxiao (K), Yunyang (E) |
+| Almanca | `de` | Katja (K), Conrad (E) |
+| Fransızca | `fr` | Denise (K), Henri (E) |
+| İspanyolca | `es` | Elvira (K), Alvaro (E) |
+| İtalyanca | `it` | Isabella (K), Diego (E) |
+| Rusça | `ru` | Svetlana (K), Dmitry (E) |
+
+## ⚙️ Ayarlar
+
+### TTS Model Seçimi
+1. Ayarlar butonuna tıkla
+2. "TTS Modeli" seçeneğinden Edge TTS veya Gemini TTS seç
+3. Edge TTS seçilirse:
+   - Dil seçimi yap
+   - Ses seçimi yap
+   - Ses hızını ayarla
+
+### API Anahtarları
+- **Response API Key**: Gemini AI için
+- **TTS API Key**: Gemini TTS için (farklı olmalı)
+
+## 🔧 Gelişmiş Özellikler
+
+### Otomatik Dil Tespiti
+Chatbot, kullanıcının mesajındaki karakterleri analiz ederek otomatik olarak dil tespiti yapar ve uygun sesi seçer.
+
+### Ses Hızı Kontrolü
+Edge TTS ile ses hızını 0.5x ile 2.0x arasında ayarlayabilirsiniz.
+
+### Fallback Sistemi
+TTS başarısız olursa, metin simülasyonu ile konuşma devam eder.
+
+## 📁 Dosya Yapısı
 
 ```
-├── index.html          # Ana HTML dosyası
+AiProject/
+├── app.js              # Ana JavaScript uygulaması
+├── brain.js            # Beyin sistemi
+├── index.html          # HTML arayüzü
 ├── styles.css          # CSS stilleri
-├── app.js             # JavaScript uygulama kodu
-└── README.md          # Bu dosya
+├── tts_server.py       # Edge TTS Python backend
+├── requirements.txt    # Python paketleri
+└── README.md           # Bu dosya
 ```
 
-## 🛠️ Teknolojiler
+## 🐛 Sorun Giderme
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **3D Graphics**: Three.js, Three-VRM
-- **AI**: Google Gemini 2.5 Flash API
-- **TTS**: Google Gemini 2.5 Flash TTS
-- **Styling**: Tailwind CSS
-- **Audio**: Web Audio API
+### Edge TTS Çalışmıyor
+1. Python backend'in çalıştığından emin ol
+2. `http://localhost:5000/health` adresini kontrol et
+3. Console'da hata mesajlarını kontrol et
 
+### Ses Çalmıyor
+1. Tarayıcı ses izinlerini kontrol et
+2. Ses seviyesini kontrol et
+3. Audio context'in başlatıldığından emin ol
 
-## 🎮 Kullanım
+## 🤝 Katkıda Bulunma
 
-1. Sayfa yüklendiğinde 3D karakter otomatik olarak yüklenir
-2. Alt kısımdaki input alanına mesajınızı yazın
-3. Enter tuşuna basın veya gönder butonuna tıklayın
-4. Karakter düşünür, AI yanıt üretir ve konuşur
-5. Ağız animasyonu ses ile senkronize olur
-
-## 🎯 Ağız Senkronizasyonu
-
-- **Gerçek Ses**: Web Audio API ile ses analizi
-- **Fallback**: TTS hatası durumunda simüle edilmiş ağız hareketi
-- **Durum Kontrolü**: Sadece konuşurken ağız açılır
-
-
-## 🌟 Özellikler
-
-- **Modüler Kod Yapısı**: Kolay bakım ve geliştirme
-- **Responsive Tasarım**: Tüm cihazlarda uyumlu
-- **Hata Yönetimi**: Graceful fallback sistemi
-- **Performans Optimizasyonu**: Smooth animasyonlar
-- **Cross-browser Uyumluluk**: Modern tarayıcılarda çalışır
+1. Fork yap
+2. Feature branch oluştur (`git checkout -b feature/AmazingFeature`)
+3. Commit yap (`git commit -m 'Add some AmazingFeature'`)
+4. Push yap (`git push origin feature/AmazingFeature`)
+5. Pull Request oluştur
 
 ## 📄 Lisans
 
-Bu proje " All Rights Reserved " lisansı altında lisanslanmıştır.
-Kaynak kodu Mustafa'nın izni olmadan kopyalanamaz, değiştirilemez veya dağıtılamaz.
-Yalnızca GitHub Pages (github.io) üzerinde yayınlanan sürümü kullanılabilir.
-
-
-## 📞 İletişim
-
-- **GitHub**: [@Mustafaincby44](https://github.com/Mustafaincby44)
-- **Repository**: [3d-ai-anime-character](https://github.com/Mustafaincby44/3d-ai-anime-character)
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
 
 ## 🙏 Teşekkürler
 
-- [Three.js](https://threejs.org/) - 3D grafik kütüphanesi
-- [Three-VRM](https://github.com/pixiv/three-vrm) - VRM model desteği
-- [Google Gemini](https://ai.google.dev/) - AI ve TTS API'leri
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- **Microsoft Edge TTS** - Ücretsiz TTS servisi
+- **Google Gemini AI** - AI modeli
+- **Three.js** - 3D grafik kütüphanesi
+- **VRM** - 3D model formatı
+
+---
+
+**Not**: Bu proje eğitim amaçlıdır. Ticari kullanım için gerekli lisansları kontrol edin.
