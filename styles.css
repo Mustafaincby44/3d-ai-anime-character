@@ -527,6 +527,156 @@ input:checked + .toggle-slider:before {
     font-weight: 500;
 }
 
+/* TTS Settings */
+.tts-settings {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+/* Language Select */
+.language-select {
+    background: #2a2a3a;
+    border: 1px solid #4c4c6a;
+    border-radius: 8px;
+    color: #e0e0f0;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.language-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Edge TTS specific styles */
+#edge-tts-settings {
+    background: rgba(34, 197, 94, 0.05);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+#edge-tts-settings .setting-item {
+    margin-bottom: 15px;
+}
+
+#edge-tts-settings .setting-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Gemini TTS specific styles */
+#gemini-tts-settings {
+    background: rgba(99, 102, 241, 0.05);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* Speed slider specific */
+#edge-speed {
+    background: #4c4c6a;
+}
+
+#edge-speed::-webkit-slider-thumb {
+    background: #22c55e;
+}
+
+#edge-speed::-webkit-slider-thumb:hover {
+    background: #16a34a;
+}
+
+/* Voice select styling */
+.voice-select {
+    background: #2a2a3a;
+    border: 1px solid #4c4c6a;
+    border-radius: 8px;
+    color: #e0e0f0;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.voice-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Edge TTS voice options */
+#edge-voice option {
+    background: #2a2a3a;
+    color: #e0e0f0;
+    padding: 8px;
+}
+
+/* Model select styling */
+.model-select {
+    background: #2a2a3a;
+    border: 1px solid #4c4c6a;
+    border-radius: 8px;
+    color: #e0e0f0;
+    padding: 12px 16px;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.3s;
+    margin-bottom: 10px;
+}
+
+.model-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* TTS model change indicator */
+.tts-model-change {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    color: #22c55e;
+    font-size: 0.85rem;
+    display: none;
+}
+
+.tts-model-change.show {
+    display: block;
+}
+
+/* Edge TTS status */
+.edge-tts-status {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    color: #22c55e;
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments for TTS settings */
+@media (max-width: 768px) {
+    .tts-settings {
+        padding: 12px;
+        margin-top: 12px;
+    }
+    
+    .language-select,
+    .voice-select,
+    .model-select {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+    
+    #edge-tts-settings .setting-item {
+        margin-bottom: 12px;
+    }
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .settings-panel {
