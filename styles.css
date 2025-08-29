@@ -1104,3 +1104,91 @@ input[type="checkbox"] {
         gap: 10px;
     }
 }
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 10000;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Color Options Styles */
+.color-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.color-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.color-option label {
+    font-size: 14px;
+    color: #e5e7eb;
+    margin: 0;
+}
+
+.color-option input[type="color"] {
+    width: 40px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+}
+
+/* Input Color Styling */
+input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+input[type="color"]:hover {
+    border-color: #6366f1;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
