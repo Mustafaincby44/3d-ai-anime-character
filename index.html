@@ -64,6 +64,18 @@
                     <i class="fas fa-user"></i>
                     Karakter
                 </button>
+                <button class="tab-btn" data-tab="ui-design">
+                    <i class="fas fa-palette"></i>
+                    UI Tasarımı
+                </button>
+                <button class="tab-btn" data-tab="colors">
+                    <i class="fas fa-paint-brush"></i>
+                    Renk & Süsleme
+                </button>
+                <button class="tab-btn" data-tab="message-style">
+                    <i class="fas fa-comments"></i>
+                    Mesaj Yeri
+                </button>
                 <button class="tab-btn" data-tab="advanced">
                     <i class="fas fa-tools"></i>
                     Gelişmiş
@@ -280,6 +292,182 @@
                         <div class="slider-container">
                             <input type="range" id="animation-speed" min="0.5" max="2.0" step="0.1" value="1.0">
                             <span id="animation-speed-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- UI Tasarımı -->
+                <div id="ui-design-tab" class="tab-panel">
+                    <h3>🎨 UI Tasarımı</h3>
+                    
+                    <div class="setting-group">
+                        <label>📱 Ana Tema</label>
+                        <select id="main-ui-theme">
+                            <option value="modern">Modern</option>
+                            <option value="classic">Klasik</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="glassmorphism">Glassmorphism</option>
+                            <option value="neumorphism">Neumorphism</option>
+                            <option value="retro">Retro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🔲 Köşe Yuvarlaklığı</label>
+                        <div class="slider-container">
+                            <input type="range" id="border-radius" min="0" max="30" value="12">
+                            <span id="border-radius-value">12px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🌫️ Şeffaflık</label>
+                        <div class="slider-container">
+                            <input type="range" id="transparency" min="0" max="100" value="20">
+                            <span id="transparency-value">20%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💫 Animasyon Efektleri</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="animation-effects" checked>
+                            <label for="animation-effects" class="toggle-label"></label>
+                            <span>Hover ve tıklama animasyonları</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎭 Gölge Efektleri</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="shadow-effects" checked>
+                            <label for="shadow-effects" class="toggle-label"></label>
+                            <span>3D gölge ve derinlik</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Renk & Süsleme -->
+                <div id="colors-tab" class="tab-panel">
+                    <h3>🎨 Renk & Süsleme</h3>
+                    
+                    <div class="setting-group">
+                        <label>🌈 Ana Renk</label>
+                        <input type="color" id="primary-color" value="#6366f1">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎨 İkincil Renk</label>
+                        <input type="color" id="secondary-color" value="#8b5cf6">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>✨ Vurgu Rengi</label>
+                        <input type="color" id="accent-color" value="#f59e0b">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💪 Renk Yoğunluğu</label>
+                        <div class="slider-container">
+                            <input type="range" id="color-intensity" min="0" max="100" value="70">
+                            <span id="color-intensity-value">70%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🌟 Gradient Efektleri</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="gradient-effects" checked>
+                            <label for="gradient-effects" class="toggle-label"></label>
+                            <span>Renk geçişleri ve gradientler</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💎 Kristal Efekti</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="crystal-effect">
+                            <label for="crystal-effect" class="toggle-label"></label>
+                            <span>Kristal ve buz efekti</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🔥 Neon Efekti</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="neon-effect">
+                            <label for="neon-effect" class="toggle-label"></label>
+                            <span>Neon ışık efekti</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mesaj Yeri -->
+                <div id="message-style-tab" class="tab-panel">
+                    <h3>💬 Mesaj Yeri</h3>
+                    
+                    <div class="setting-group">
+                        <label>📱 Mesaj Konumu</label>
+                        <select id="message-position">
+                            <option value="bottom">Alt</option>
+                            <option value="center">Orta</option>
+                            <option value="top">Üst</option>
+                            <option value="left">Sol</option>
+                            <option value="right">Sağ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎨 Mesaj Kutusu Stili</label>
+                        <select id="message-box-style">
+                            <option value="rounded">Yuvarlak</option>
+                            <option value="sharp">Keskin</option>
+                            <option value="bubble">Baloncuk</option>
+                            <option value="card">Kart</option>
+                            <option value="glass">Cam</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💫 Mesaj Animasyonu</label>
+                        <select id="message-animation">
+                            <option value="slide">Kaydırma</option>
+                            <option value="fade">Solma</option>
+                            <option value="bounce">Zıplama</option>
+                            <option value="scale">Büyüme</option>
+                            <option value="rotate">Döndürme</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎭 Mesaj Efektleri</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="message-typing-effect" checked>
+                            <label for="message-typing-effect" class="toggle-label"></label>
+                            <span>Yazma efekti</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>✨ Mesaj Süsleme</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="message-decoration" checked>
+                            <label for="message-decoration" class="toggle-label"></label>
+                            <span>Emoji ve süsleme</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎨 Mesaj Renkleri</label>
+                        <div class="color-options">
+                            <div class="color-option">
+                                <label>Kullanıcı Mesajı</label>
+                                <input type="color" id="user-message-color" value="#3b82f6">
+                            </div>
+                            <div class="color-option">
+                                <label>Bot Mesajı</label>
+                                <input type="color" id="bot-message-color" value="#10b981">
+                            </div>
                         </div>
                     </div>
                 </div>
