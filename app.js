@@ -2646,3 +2646,72 @@ function importSettings(file) {
         showNotification('❌ Dosya okunamadı!', 'error');
     }
 }
+
+// Tüm ayarları sıfırla
+function resetAllSettings() {
+    if (confirm('Tüm ayarları sıfırlamak istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+        try {
+            // LocalStorage'ı temizle
+            localStorage.clear();
+            
+            // Formu sıfırla
+            loadCurrentSettings();
+            
+            showNotification('✅ Tüm ayarlar sıfırlandı!', 'success');
+            
+        } catch (error) {
+            console.error('❌ Ayarlar sıfırlanırken hata:', error);
+            showNotification('❌ Ayarlar sıfırlanırken hata oluştu!', 'error');
+        }
+    }
+}
+
+// Bildirim gösterme fonksiyonu
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animasyon için timeout
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // 3 saniye sonra kaldır
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// UI tema uygulama fonksiyonu
+function applyUITheme(theme) {
+    const root = document.documentElement;
+    
+    switch(theme) {
+        case 'glassmorphism':
+            root.style.setProperty('--bg-overlay', 'rgba(255, 255, 255, 0.1)');
+            root.style.setProperty('--backdrop-blur', 'blur(20px)');
+            break;
+        case 'neumorphism':
+            root.style.setProperty('--shadow-style', 'inset 2px 2px 5px rgba(0,0,0,0.3), inset -2px -2px 5px rgba(255,255,255,0.1)');
+            break;
+        case 'minimal':
+            root.style.setProperty('--border-radius', '0px');
+            root.style.setProperty('--shadow-style', 'none');
+            break;
+        case 'retro':
+            root.style.setProperty('--primary-color', '#ff6b35');
+            root.style.setProperty('--secondary-color', '#f7931e');
+            break;
+        default:
+            // Modern tema (varsayılan)
+            break;
+    }
+}
