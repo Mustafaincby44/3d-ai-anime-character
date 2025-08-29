@@ -4,368 +4,628 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D AI Anime Character</title>
-    <!-- Tailwind CSS - Production ready -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- 3D Canvas Container -->
     <div id="canvas-container"></div>
     
-    <!-- API Limit Display - Top of screen -->
-    <div id="api-limit-display" class="api-limit-display">
-        <div class="limit-item">
-            📝 Cevap: <span id="top-response-used">0</span>/<span id="top-response-limit">1500</span>
+    <!-- Modern Floating UI -->
+    <div class="floating-ui">
+        <!-- Top Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <i class="fas fa-brain"></i>
+                <span id="top-response-used">0</span>/<span id="top-response-limit">1500</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-microphone"></i>
+                <span id="top-tts-used">0</span>/<span id="top-tts-limit">300</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-robot"></i>
+                <span id="top-current-model">Gemini 2.5 Flash</span>
+            </div>
         </div>
-        <div class="limit-item">
-            🎵 TTS: <span id="top-tts-used">0</span>/<span id="top-tts-limit">300</span>
+        
+        <!-- Settings Button -->
+        <div id="settings-button" class="floating-button settings-btn">
+            <i class="fas fa-cog"></i>
         </div>
-        <div class="limit-item">
-            📱 Model: <span id="top-current-model">Gemini 2.5 Flash</span>
+        
+        <!-- Chat Interface -->
+        <div class="chat-interface">
+            <div class="chat-header">
+                <div class="character-info">
+                    <div class="character-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="character-details">
+                        <h3>AI Anime Kız</h3>
+                        <span class="status-indicator online">Çevrimiçi</span>
+                    </div>
+                </div>
+                <div class="chat-controls">
+                    <button class="control-btn" id="clear-chat" title="Sohbeti Temizle">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="control-btn" id="export-chat" title="Sohbeti Dışa Aktar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message system">
+                    <div class="message-content">
+                        <i class="fas fa-robot"></i>
+                        <span>Merhaba! Ben senin AI anime arkadaşın. Nasılsın? 😊</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" placeholder="Mesajını yaz..." maxlength="500">
+                    <div class="input-actions">
+                        <button class="action-btn" id="voice-input" title="Ses ile giriş">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="action-btn" id="send-message" title="Gönder">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-footer">
+                    <span class="char-count">0/500</span>
+                    <span class="typing-indicator" id="typing-indicator" style="display: none;">
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                        <i class="fas fa-circle"></i>
+                    </span>
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <!-- Settings Button - Outside UI Container -->
-    <div id="settings-button" class="settings-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-            <circle cx="12" cy="12" r="3"/>
-        </svg>
     </div>
 
-    <!-- Settings Modal - Center of screen -->
-    <div id="settings-modal" class="settings-modal hidden">
-        <div class="settings-content">
-            <!-- Header -->
-            <div class="settings-header">
-                <h2>⚙️ Ayarlar</h2>
+    <!-- Modern Settings Modal -->
+    <div id="settings-modal" class="modern-modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="header-content">
+                    <h2><i class="fas fa-cog"></i> Ayarlar</h2>
+                    <p>Uygulama ayarlarını özelleştir</p>
+                </div>
                 <button id="close-settings" class="close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <!-- Kategoriler -->
-            <div class="settings-tabs">
-                <button class="tab-btn active" data-tab="general">
-                    <i class="fas fa-home"></i>
-                    Genel
-                </button>
-                <button class="tab-btn" data-tab="ai">
-                    <i class="fas fa-brain"></i>
-                    AI & Cevap
-                </button>
-                <button class="tab-btn" data-tab="voice">
-                    <i class="fas fa-microphone"></i>
-                    Ses & TTS
-                </button>
-                <button class="tab-btn" data-tab="character">
-                    <i class="fas fa-user"></i>
-                    Karakter
-                </button>
-                <button class="tab-btn" data-tab="advanced">
-                    <i class="fas fa-tools"></i>
-                    Gelişmiş
-                </button>
-            </div>
-            
-            <!-- Tab İçerikleri -->
-            <div class="tab-content">
-                <!-- Genel Ayarlar -->
-                <div id="general-tab" class="tab-panel active">
-                    <h3>🎮 Genel Ayarlar</h3>
-                    
-                    <div class="setting-group">
-                        <label>🔊 Ses Seviyesi</label>
-                        <div class="slider-container">
-                            <input type="range" id="volume-slider" min="0" max="100" value="70">
-                            <span id="volume-value">70%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>💬 Otomatik Konuşma</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="auto-talk-toggle">
-                            <label for="auto-talk-toggle" class="toggle-label"></label>
-                            <span>Karakterin kendiliğinden konuşmasına izin ver</span>
-                        </div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>🌍 Varsayılan Dil</label>
-                        <select id="default-language">
-                            <option value="tr">Türkçe</option>
-                            <option value="en">English</option>
-                            <option value="ja">日本語</option>
-                            <option value="ko">한국어</option>
-                            <option value="zh">中文</option>
-                        </select>
-                    </div>
+            <div class="modal-body">
+                <div class="settings-navigation">
+                    <button class="nav-item active" data-tab="general">
+                        <i class="fas fa-home"></i>
+                        <span>Genel</span>
+                    </button>
+                    <button class="nav-item" data-tab="ai">
+                        <i class="fas fa-brain"></i>
+                        <span>AI & Cevap</span>
+                    </button>
+                    <button class="nav-item" data-tab="voice">
+                        <i class="fas fa-microphone"></i>
+                        <span>Ses & TTS</span>
+                    </button>
+                    <button class="nav-item" data-tab="character">
+                        <i class="fas fa-user"></i>
+                        <span>Karakter</span>
+                    </button>
+                    <button class="nav-item" data-tab="appearance">
+                        <i class="fas fa-palette"></i>
+                        <span>Görünüm</span>
+                    </button>
+                    <button class="nav-item" data-tab="advanced">
+                        <i class="fas fa-tools"></i>
+                        <span>Gelişmiş</span>
+                    </button>
                 </div>
                 
-                <!-- AI & Cevap Ayarları -->
-                <div id="ai-tab" class="tab-panel">
-                    <h3>🧠 AI & Cevap Ayarları</h3>
-                    
-                    <div class="setting-group">
-                        <label>🔑 Response API Key</label>
-                        <div class="api-input-container">
-                            <input type="password" id="response-api-key-input" placeholder="API Key girin...">
-                            <button id="save-response-api-key" class="save-btn">Kaydet</button>
-                        </div>
-                        <div id="response-api-status" class="api-status"></div>
-                        <div id="response-api-tier-info" class="tier-info"></div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>📝 Response Model</label>
-                        <select id="response-model">
-                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>🎭 Karakter Kişiliği</label>
-                        <select id="character-personality">
-                            <option value="cute">Sevimli & Tatlı</option>
-                            <option value="shy">Utangaç & Nazik</option>
-                            <option value="energetic">Enerjik & Neşeli</option>
-                            <option value="mysterious">Gizemli & Sakin</option>
-                            <option value="custom">Özel</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-group" id="custom-personality-group" style="display: none;">
-                        <label>✏️ Özel Kişilik</label>
-                        <textarea id="custom-personality-text" placeholder="Karakterin kişiliğini tanımlayın..."></textarea>
-                    </div>
-                </div>
-                
-                <!-- Ses & TTS Ayarları -->
-                <div id="voice-tab" class="tab-panel">
-                    <h3>🎤 Ses & TTS Ayarları</h3>
-                    
-                    <div class="setting-group">
-                        <label>🔑 TTS API Key</label>
-                        <div class="api-input-container">
-                            <input type="password" id="tts-api-key-input" placeholder="TTS API Key girin...">
-                            <button id="save-tts-api-key" class="save-btn">Kaydet</button>
-                        </div>
-                        <div id="tts-api-status" class="api-status"></div>
-                        <div id="tts-api-tier-info" class="tier-info"></div>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>🎭 TTS Servisi</label>
-                        <select id="tts-service">
-                            <option value="edge-tts">Edge TTS (Ücretsiz, Sınırsız)</option>
-                            <option value="gemini-tts">Gemini TTS (15/gün)</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Edge TTS Ayarları -->
-                    <div id="edge-tts-settings" class="tts-settings">
-                        <div class="setting-group">
-                            <label>🌍 Dil Seçimi</label>
-                            <select id="edge-language">
-                                <option value="tr">Türkçe</option>
-                                <option value="en">English</option>
-                                <option value="ja">日本語</option>
-                                <option value="ko">한국어</option>
-                                <option value="zh">中文</option>
-                                <option value="de">Deutsch</option>
-                                <option value="fr">Français</option>
-                                <option value="es">Español</option>
-                                <option value="it">Italiano</option>
-                                <option value="ru">Русский</option>
-                            </select>
+                <div class="settings-content">
+                    <!-- Genel Ayarlar -->
+                    <div id="general-panel" class="tab-panel active">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-home"></i> Genel Ayarlar</h3>
+                            <p>Temel uygulama ayarları</p>
                         </div>
                         
-                        <div class="setting-group">
-                            <label>🎭 Ses Seçimi</label>
-                            <select id="edge-voice">
-                                <!-- JavaScript ile doldurulacak -->
-                            </select>
-                        </div>
-                        
-                        <div class="setting-group">
-                            <label>⚡ Ses Hızı</label>
-                            <div class="slider-container">
-                                <input type="range" id="edge-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-                                <span id="edge-speed-value">1.0x</span>
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-volume-up"></i>
+                                    <h4>Ses Seviyesi</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.7" class="modern-slider">
+                                        <div class="slider-labels">
+                                            <span>0%</span>
+                                            <span id="volume-display">70%</span>
+                                            <span>100%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-comments"></i>
+                                    <h4>Otomatik Konuşma</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-talk">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="setting-description">Karakterin kendiliğinden konuşmasına izin ver</span>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-globe"></i>
+                                    <h4>Varsayılan Dil</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="default-language" class="modern-select">
+                                        <option value="tr">🇹🇷 Türkçe</option>
+                                        <option value="en">🇺🇸 English</option>
+                                        <option value="ja">🇯🇵 日本語</option>
+                                        <option value="ko">🇰🇷 한국어</option>
+                                        <option value="zh">🇨🇳 中文</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Gemini TTS Ayarları -->
-                    <div id="gemini-tts-settings" class="tts-settings" style="display: none;">
-                        <div class="setting-group">
-                            <label>🧠 Gemini TTS Model</label>
-                            <select id="gemini-tts-model">
-                                <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS</option>
-                                <option value="gemini-2.0-flash-preview-tts">Gemini 2.0 Flash Preview TTS</option>
-                            </select>
+                    <!-- AI & Cevap Ayarları -->
+                    <div id="ai-response-panel" class="tab-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-brain"></i> AI & Cevap Ayarları</h3>
+                            <p>Yapay zeka ve cevap üretimi ayarları</p>
                         </div>
                         
-                        <div class="setting-group">
-                            <label>🎭 Gemini Ses</label>
-                            <select id="gemini-voice">
-                                <option value="alnilam">alnilam (Kadın) - Varsayılan</option>
-                                <option value="aoede">aoede (Kadın)</option>
-                                <option value="autonoe">autonoe (Kadın)</option>
-                                <option value="callirrhoe">callirrhoe (Kadın)</option>
-                                <option value="despina">despina (Kadın)</option>
-                                <option value="erinome">erinome (Kadın)</option>
-                                <option value="kore">kore (Kadın)</option>
-                                <option value="laomedeia">laomedeia (Kadın)</option>
-                                <option value="leda">leda (Kadın)</option>
-                                <option value="pulcherrima">pulcherrima (Kadın)</option>
-                                <option value="schedar">schedar (Kadın)</option>
-                                <option value="umbriel">umbriel (Kadın)</option>
-                                <option value="vindemiatrix">vindemiatrix (Kadın)</option>
-                                <!-- Erkek Sesler -->
-                                <option value="achernar">achernar (Erkek)</option>
-                                <option value="achird">achird (Erkek)</option>
-                                <option value="algenib">algenib (Erkek)</option>
-                                <option value="algieba">algieba (Erkek)</option>
-                                <option value="charon">charon (Erkek)</option>
-                                <option value="enceladus">enceladus (Erkek)</option>
-                                <option value="fenrir">fenrir (Erkek)</option>
-                                <option value="gacrux">gacrux (Erkek)</option>
-                                <option value="iapetus">iapetus (Erkek)</option>
-                                <option value="orus">orus (Erkek)</option>
-                                <option value="puck">puck (Erkek)</option>
-                                <option value="rasalgethi">rasalgethi (Erkek)</option>
-                                <option value="sadachbia">sadachbia (Erkek)</option>
-                                <option value="sadaltager">sadaltager (Erkek)</option>
-                                <option value="sulafat">sulafat (Erkek)</option>
-                                <option value="zephyr">zephyr (Erkek)</option>
-                                <option value="zubenelgenubi">zubenelgenubi (Erkek)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Karakter Ayarları -->
-                <div id="character-tab" class="tab-panel">
-                    <h3>👤 Karakter Ayarları</h3>
-                    
-                    <div class="setting-group">
-                        <label>🎨 Karakter Teması</label>
-                        <select id="character-theme">
-                            <option value="default">Varsayılan</option>
-                            <option value="dark">Karanlık</option>
-                            <option value="light">Aydınlık</option>
-                            <option value="colorful">Renkli</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>💭 Varsayılan Duygu</label>
-                        <select id="default-emotion">
-                            <option value="happy">Mutlu</option>
-                            <option value="neutral">Nötr</option>
-                            <option value="shy">Utangaç</option>
-                            <option value="excited">Heyecanlı</option>
-                        </select>
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>🔄 Animasyon Hızı</label>
-                        <div class="slider-container">
-                            <input type="range" id="animation-speed" min="0.5" max="2.0" step="0.1" value="1.0">
-                            <span id="animation-speed-value">1.0x</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Gelişmiş Ayarlar -->
-                <div id="advanced-tab" class="tab-panel">
-                    <h3>🛠️ Gelişmiş Ayarlar</h3>
-                    
-                    <div class="setting-group">
-                        <label>📊 Debug Modu</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="debug-mode">
-                            <label for="debug-mode" class="toggle-label"></label>
-                            <span>Detaylı log ve debug bilgileri</span>
+                        <div class="settings-grid">
+                            <div class="setting-card full-width">
+                                <div class="setting-header">
+                                    <i class="fas fa-key"></i>
+                                    <h4>Response API Key</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="input-group">
+                                        <input type="password" id="response-api-key-input" placeholder="API Key girin..." class="modern-input">
+                                        <button id="save-response-api-key" class="modern-btn primary">
+                                            <i class="fas fa-save"></i>
+                                            Kaydet
+                                        </button>
+                                    </div>
+                                    <div id="response-api-status" class="api-status"></div>
+                                    <div id="response-api-tier-info" class="tier-info"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-robot"></i>
+                                    <h4>Response Model</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="response-model" class="modern-select">
+                                        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                                        <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-heart"></i>
+                                    <h4>Karakter Kişiliği</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="character-personality" class="modern-select">
+                                        <option value="cute">😊 Sevimli</option>
+                                        <option value="shy">😳 Utangaç</option>
+                                        <option value="energetic">⚡ Enerjik</option>
+                                        <option value="calm">😌 Sakin</option>
+                                        <option value="mysterious">🔮 Gizemli</option>
+                                        <option value="custom">✏️ Özel</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="custom-personality-fields" class="setting-card full-width" style="display: none;">
+                                <div class="setting-header">
+                                    <i class="fas fa-edit"></i>
+                                    <h4>Özel Kişilik</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <textarea id="custom-personality-text" placeholder="Karakterinizin kişiliğini detaylı olarak açıklayın..." class="modern-textarea" rows="4"></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="setting-group">
-                        <label>💾 Otomatik Yedekleme</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="auto-backup">
-                            <label for="auto-backup" class="toggle-label"></label>
-                            <span>Ayarları otomatik yedekle</span>
+                    <!-- Ses & TTS Ayarları -->
+                    <div id="voice-tts-panel" class="tab-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-microphone"></i> Ses & TTS Ayarları</h3>
+                            <p>Metin-ses dönüşümü ve ses ayarları</p>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card full-width">
+                                <div class="setting-header">
+                                    <i class="fas fa-key"></i>
+                                    <h4>TTS API Key</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="input-group">
+                                        <input type="password" id="tts-api-key-input" placeholder="API Key girin..." class="modern-input">
+                                        <button id="save-tts-api-key" class="modern-btn primary">
+                                            <i class="fas fa-save"></i>
+                                            Kaydet
+                                        </button>
+                                    </div>
+                                    <div id="tts-api-status" class="api-status"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-server"></i>
+                                    <h4>TTS Servisi</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="tts-service" class="modern-select">
+                                        <option value="edge-tts">Edge TTS (Ücretsiz, Sınırsız)</option>
+                                        <option value="gemini-tts">Gemini TTS (Günlük Limit)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Edge TTS Ayarları -->
+                            <div id="edge-tts-settings" class="tts-settings edge-tts">
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <i class="fas fa-language"></i>
+                                        <h4>Dil</h4>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="edge-language" class="modern-select">
+                                            <option value="tr">🇹🇷 Türkçe</option>
+                                            <option value="en">🇺🇸 English</option>
+                                            <option value="ja">🇯🇵 日本語</option>
+                                            <option value="ko">🇰🇷 한국어</option>
+                                            <option value="zh">🇨🇳 中文</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <i class="fas fa-user"></i>
+                                        <h4>Ses</h4>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="edge-voice" class="modern-select">
+                                            <option value="tr-TR-EmelNeural">Emel (Türkçe)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        <h4>Konuşma Hızı</h4>
+                                    </div>
+                                    <div class="setting-control">
+                                        <div class="slider-wrapper">
+                                            <input type="range" id="edge-speed" min="0.5" max="2.0" step="0.1" value="1.0" class="modern-slider">
+                                            <div class="slider-labels">
+                                                <span>0.5x</span>
+                                                <span id="edge-speed-display">1.0x</span>
+                                                <span>2.0x</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gemini TTS Ayarları -->
+                            <div id="gemini-tts-settings" class="tts-settings gemini-tts" style="display: none;">
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <i class="fas fa-robot"></i>
+                                        <h4>Gemini TTS Model</h4>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="gemini-tts-model" class="modern-select">
+                                            <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS</option>
+                                            <option value="gemini-2.0-flash-preview-tts">Gemini 2.0 Flash Preview TTS</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <i class="fas fa-user"></i>
+                                        <h4>Gemini Ses</h4>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="gemini-voice" class="modern-select">
+                                            <option value="alnilam">Alnilam</option>
+                                            <option value="alnitak">Alnitak</option>
+                                            <option value="mintaka">Mintaka</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="setting-group">
-                        <label>🔄 Ayarları Sıfırla</label>
-                        <button id="reset-settings" class="danger-btn">Tüm Ayarları Sıfırla</button>
+                    <!-- Karakter Ayarları -->
+                    <div id="character-panel" class="tab-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-user"></i> Karakter Ayarları</h3>
+                            <p>3D karakter görünümü ve davranışı</p>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-user"></i>
+                                    <h4>Karakter Adı</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="text" id="character-name" placeholder="Karakter adını girin..." class="modern-input">
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-palette"></i>
+                                    <h4>Karakter Teması</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="character-theme" class="modern-select">
+                                        <option value="default">🎨 Varsayılan</option>
+                                        <option value="dark">🌙 Karanlık</option>
+                                        <option value="light">☀️ Aydınlık</option>
+                                        <option value="colorful">🌈 Renkli</option>
+                                        <option value="nature">🌿 Doğa</option>
+                                        <option value="cyber">🤖 Siber</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-smile"></i>
+                                    <h4>Varsayılan Duygu</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="default-emotion" class="modern-select">
+                                        <option value="happy">😊 Mutlu</option>
+                                        <option value="sad">😢 Üzgün</option>
+                                        <option value="angry">😠 Kızgın</option>
+                                        <option value="surprised">😲 Şaşkın</option>
+                                        <option value="calm">😌 Sakin</option>
+                                        <option value="excited">🤩 Heyecanlı</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-running"></i>
+                                    <h4>Animasyon Hızı</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="animation-speed" min="0.5" max="2.0" step="0.1" value="1.0" class="modern-slider">
+                                        <div class="slider-labels">
+                                            <span>0.5x</span>
+                                            <span id="animation-speed-display">1.0x</span>
+                                            <span>2.0x</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="setting-group">
-                        <label>📤 Ayarları Dışa Aktar</label>
-                        <button id="export-settings" class="export-btn">JSON Olarak İndir</button>
+                    <!-- Görünüm Ayarları -->
+                    <div id="appearance-panel" class="tab-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-palette"></i> Görünüm Ayarları</h3>
+                            <p>UI teması ve renk ayarları</p>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-moon"></i>
+                                    <h4>UI Teması</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="ui-theme" class="modern-select">
+                                        <option value="auto">🔄 Otomatik</option>
+                                        <option value="light">☀️ Aydınlık</option>
+                                        <option value="dark">🌙 Karanlık</option>
+                                        <option value="auto">🎨 Sistem</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-palette"></i>
+                                    <h4>Renk Yoğunluğu</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="color-intensity" min="0" max="100" value="70" class="modern-slider">
+                                        <div class="slider-labels">
+                                            <span>Soluk</span>
+                                            <span id="color-intensity-display">70%</span>
+                                            <span>Canlı</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-eye"></i>
+                                    <h4>Şeffaflık</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="transparency" min="0" max="100" value="20" class="modern-slider">
+                                        <div class="slider-labels">
+                                            <span>0%</span>
+                                            <span id="transparency-display">20%</span>
+                                            <span>100%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-border-style"></i>
+                                    <h4>Kenar Yuvarlaklığı</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <div class="slider-wrapper">
+                                        <input type="range" id="border-radius" min="0" max="20" value="12" class="modern-slider">
+                                        <div class="slider-labels">
+                                            <span>Keskin</span>
+                                            <span id="border-radius-display">12px</span>
+                                            <span>Yuvarlak</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="setting-group">
-                        <label>📥 Ayarları İçe Aktar</label>
-                        <input type="file" id="import-settings" accept=".json">
+                    <!-- Gelişmiş Ayarlar -->
+                    <div id="advanced-panel" class="tab-panel">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-tools"></i> Gelişmiş Ayarlar</h3>
+                            <p>Gelişmiş özellikler ve sistem ayarları</p>
+                        </div>
+                        
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-bug"></i>
+                                    <h4>Debug Modu</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="debug-mode">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="setting-description">Gelişmiş hata ayıklama bilgilerini göster</span>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card">
+                                <div class="setting-header">
+                                    <i class="fas fa-save"></i>
+                                    <h4>Otomatik Yedekleme</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-backup">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="setting-description">Ayarları otomatik olarak yedekle</span>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card full-width">
+                                <div class="setting-header">
+                                    <i class="fas fa-download"></i>
+                                    <h4>Ayarları Dışa Aktar</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <button id="export-settings" class="modern-btn secondary">
+                                        <i class="fas fa-download"></i>
+                                        JSON Olarak İndir
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card full-width">
+                                <div class="setting-header">
+                                    <i class="fas fa-upload"></i>
+                                    <h4>Ayarları İçe Aktar</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <button id="import-settings" class="modern-btn secondary">
+                                        <i class="fas fa-upload"></i>
+                                        JSON Dosyası Seç
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-card full-width">
+                                <div class="setting-header">
+                                    <i class="fas fa-trash"></i>
+                                    <h4>Ayarları Sıfırla</h4>
+                                </div>
+                                <div class="setting-control">
+                                    <button id="reset-settings" class="modern-btn danger">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Tüm Ayarları Sıfırla
+                                    </button>
+                                    <span class="setting-description">⚠️ Bu işlem geri alınamaz!</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Footer -->
-            <div class="settings-footer">
-                <div class="unsaved-changes" id="unsaved-changes" style="display: none;">
-                    ⚠️ Kaydedilmemiş değişiklikler var
+            <div class="modal-footer">
+                <div id="unsaved-changes" class="unsaved-warning" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Kaydedilmemiş değişiklikler var</span>
                 </div>
-                <div class="footer-buttons">
-                    <button id="cancel-settings" class="cancel-btn">İptal</button>
-                    <button id="save-all-settings" class="save-all-btn">Tümünü Kaydet</button>
+                <div class="footer-actions">
+                    <button id="cancel-settings" class="modern-btn secondary">
+                        <i class="fas fa-times"></i>
+                        İptal
+                    </button>
+                    <button id="save-all-settings" class="modern-btn primary">
+                        <i class="fas fa-save"></i>
+                        Tümünü Kaydet
+                    </button>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="ui-container">
-        <div id="status-wrapper">
-            <span id="status-text">Sahne hazırlanıyor...</span>
-            <div id="thinking-indicator" class="thinking-dots ml-2 hidden">
-                <span></span><span></span><span></span>
-            </div>
-        </div>
-        <div class="w-full max-w-2xl">
-            <div class="relative">
-                <input type="text" id="userInput" placeholder="Ona bir şeyler söyle..." disabled
-                    class="w-full py-4 pl-6 pr-20 bg-gray-900/80 border border-gray-700 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 backdrop-blur-sm shadow-lg placeholder-gray-500">
-                <button id="sendButton" disabled
-                    class="absolute inset-y-0 right-0 flex items-center justify-center w-16 h-full text-gray-400 hover:text-indigo-400 transition-colors duration-300 disabled:text-gray-600 disabled:cursor-not-allowed">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                        <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
-                    </svg>
-                </button>
             </div>
         </div>
     </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://esm.sh/three@0.160.0",
-                "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-    <script src="brain.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
