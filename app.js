@@ -1913,3 +1913,157 @@ function applyVolumeToAudio(audioBuffer) {
 
 // ===== START APPLICATION =====
 init();
+
+// Event Listeners for Settings Modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Settings button click
+    const settingsButton = document.getElementById('settings-button');
+    if (settingsButton) {
+        settingsButton.addEventListener('click', openSettingsModal);
+    }
+    
+    // Close settings button
+    const closeSettingsBtn = document.getElementById('close-settings');
+    if (closeSettingsBtn) {
+        closeSettingsBtn.addEventListener('click', closeSettingsModal);
+    }
+    
+    // Cancel settings button
+    const cancelSettingsBtn = document.getElementById('cancel-settings');
+    if (cancelSettingsBtn) {
+        cancelSettingsBtn.addEventListener('click', closeSettingsModal);
+    }
+    
+    // Save all settings button
+    const saveAllSettingsBtn = document.getElementById('save-all-settings');
+    if (saveAllSettingsBtn) {
+        saveAllSettingsBtn.addEventListener('click', saveAllSettings);
+    }
+    
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = e.target.closest('.tab-btn').dataset.tab;
+            showSettingsTab(tabName);
+        });
+    });
+    
+    // Modal backdrop click to close
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                closeSettingsModal();
+            }
+        });
+    }
+    
+    // Input change listeners for unsaved changes
+    document.querySelectorAll('.setting-group input, .setting-group select, .setting-group textarea').forEach(input => {
+        input.addEventListener('change', markSettingsChanged);
+        input.addEventListener('input', markSettingsChanged);
+    });
+    
+    // Volume slider
+    const volumeSlider = document.getElementById('volume-slider');
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', updateVolumeDisplay);
+    }
+    
+    // Edge speed slider
+    const edgeSpeedSlider = document.getElementById('edge-speed');
+    if (edgeSpeedSlider) {
+        edgeSpeedSlider.addEventListener('input', updateEdgeSpeedDisplay);
+    }
+    
+    // Animation speed slider
+    const animationSpeedSlider = document.getElementById('animation-speed');
+    if (animationSpeedSlider) {
+        animationSpeedSlider.addEventListener('input', updateAnimationSpeedDisplay);
+    }
+    
+    // Edge language change
+    const edgeLanguageSelect = document.getElementById('edge-language');
+    if (edgeLanguageSelect) {
+        edgeLanguageSelect.addEventListener('change', updateEdgeVoiceOptions);
+    }
+    
+    // Character personality change
+    const characterPersonalitySelect = document.getElementById('character-personality');
+    if (characterPersonalitySelect) {
+        characterPersonalitySelect.addEventListener('change', updatePersonalityFields);
+    }
+    
+    // TTS service change
+    const ttsServiceSelect = document.getElementById('tts-service');
+    if (ttsServiceSelect) {
+        ttsServiceSelect.addEventListener('change', updateTTSServiceSettings);
+    }
+    
+    // Export settings button
+    const exportSettingsBtn = document.getElementById('export-settings');
+    if (exportSettingsBtn) {
+        exportSettingsBtn.addEventListener('click', exportSettings);
+    }
+    
+    // Import settings file input
+    const importSettingsInput = document.getElementById('import-settings');
+    if (importSettingsInput) {
+        importSettingsInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importSettings(e.target.files[0]);
+            }
+        });
+    }
+    
+    // Reset settings button
+    const resetSettingsBtn = document.getElementById('reset-settings');
+    if (resetSettingsBtn) {
+        resetSettingsBtn.addEventListener('click', resetAllSettings);
+    }
+    
+    // Save individual API keys
+    const saveResponseApiKeyBtn = document.getElementById('save-response-api-key');
+    if (saveResponseApiKeyBtn) {
+        saveResponseApiKeyBtn.addEventListener('click', () => {
+            const apiKey = document.getElementById('response-api-key-input')?.value;
+            if (apiKey) {
+                localStorage.setItem('responseApiKey', apiKey);
+                showNotification('✅ Response API Key kaydedildi!', 'success');
+                markSettingsChanged();
+            }
+        });
+    }
+    
+    const saveTtsApiKeyBtn = document.getElementById('save-tts-api-key');
+    if (saveTtsApiKeyBtn) {
+        saveTtsApiKeyBtn.addEventListener('click', () => {
+            const apiKey = document.getElementById('tts-api-key-input')?.value;
+            if (apiKey) {
+                localStorage.setItem('ttsApiKey', apiKey);
+                showNotification('✅ TTS API Key kaydedildi!', 'success');
+                markSettingsChanged();
+            }
+        });
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // ESC key to close settings
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('settings-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeSettingsModal();
+            }
+        }
+        
+        // Ctrl+S to save all settings
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            const modal = document.getElementById('settings-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                saveAllSettings();
+            }
+        }
+    });
+});
