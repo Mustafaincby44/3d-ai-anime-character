@@ -2067,3 +2067,582 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Modal Ayarlar Sistemi
+let currentSettingsTab = 'general';
+let hasUnsavedChanges = false;
+
+// Ayarlar modalını aç
+function openSettingsModal() {
+    console.log('🔧 Ayarlar modalı açılıyor...');
+    const modal = document.getElementById('settings-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // İlk tab'ı aktif et
+        showSettingsTab('general');
+        
+        // Mevcut ayarları yükle
+        loadCurrentSettings();
+        
+        console.log('✅ Ayarlar modalı açıldı');
+    } else {
+        console.error('❌ Settings modal bulunamadı!');
+    }
+}
+
+// Ayarlar modalını kapat
+function closeSettingsModal() {
+    console.log('🔧 Ayarlar modalı kapatılıyor...');
+    if (hasUnsavedChanges) {
+        if (confirm('Kaydedilmemiş değişiklikler var. Çıkmak istediğinizden emin misiniz?')) {
+            resetUnsavedChanges();
+            const modal = document.getElementById('settings-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+                console.log('✅ Ayarlar modalı kapatıldı (değişiklikler iptal edildi)');
+            }
+        }
+    } else {
+        const modal = document.getElementById('settings-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            console.log('✅ Ayarlar modalı kapatıldı');
+        }
+    }
+}
+
+// Tab değiştir
+function showSettingsTab(tabName) {
+    console.log(`🔧 Tab değiştiriliyor: ${tabName}`);
+    
+    // Tüm tab'ları gizle
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    // Tüm tab butonlarını pasif et
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Seçilen tab'ı göster
+    const selectedPanel = document.getElementById(`${tabName}-tab`);
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+        console.log(`✅ ${tabName} tab'ı aktif edildi`);
+    }
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    currentSettingsTab = tabName;
+}
+
+// Ayar değişikliği tespit et
+function markSettingsChanged() {
+    hasUnsavedChanges = true;
+    const unsavedElement = document.getElementById('unsaved-changes');
+    if (unsavedElement) {
+        unsavedElement.style.display = 'block';
+    }
+    console.log('⚠️ Ayar değişikliği tespit edildi');
+}
+
+// Değişiklikleri sıfırla
+function resetUnsavedChanges() {
+    hasUnsavedChanges = false;
+    const unsavedElement = document.getElementById('unsaved-changes');
+    if (unsavedElement) {
+        unsavedElement.style.display = 'none';
+    }
+    console.log('✅ Değişiklikler sıfırlandı');
+}
+
+// Mevcut ayarları yükle
+function loadCurrentSettings() {
+    console.log('🔧 Mevcut ayarlar yükleniyor...');
+    
+    try {
+        // Ses seviyesi
+        const volumeSlider = document.getElementById('volume-slider');
+        if (volumeSlider) {
+            volumeSlider.value = localStorage.getItem('volume') || 70;
+            updateVolumeDisplay();
+        }
+        
+        // Otomatik konuşma
+        const autoTalkToggle = document.getElementById('auto-talk-toggle');
+        if (autoTalkToggle) {
+            autoTalkToggle.checked = localStorage.getItem('autoTalk') === 'true';
+        }
+        
+        // Varsayılan dil
+        const defaultLanguage = document.getElementById('default-language');
+        if (defaultLanguage) {
+            defaultLanguage.value = localStorage.getItem('defaultLanguage') || 'tr';
+        }
+        
+        // Response API Key
+        const responseApiKeyInput = document.getElementById('response-api-key-input');
+        if (responseApiKeyInput) {
+            responseApiKeyInput.value = localStorage.getItem('responseApiKey') || '';
+        }
+        
+        // Response Model
+        const responseModel = document.getElementById('response-model');
+        if (responseModel) {
+            responseModel.value = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
+        }
+        
+        // Karakter kişiliği
+        const characterPersonality = document.getElementById('character-personality');
+        if (characterPersonality) {
+            characterPersonality.value = localStorage.getItem('characterPersonality') || 'cute';
+            updatePersonalityFields();
+        }
+        
+        // TTS API Key
+        const ttsApiKeyInput = document.getElementById('tts-api-key-input');
+        if (ttsApiKeyInput) {
+            ttsApiKeyInput.value = localStorage.getItem('ttsApiKey') || '';
+        }
+        
+        // TTS Servisi
+        const ttsService = document.getElementById('tts-service');
+        if (ttsService) {
+            ttsService.value = localStorage.getItem('ttsService') || 'edge-tts';
+            updateTTSServiceSettings();
+        }
+        
+        // Edge TTS ayarları
+        const edgeLanguage = document.getElementById('edge-language');
+        if (edgeLanguage) {
+            edgeLanguage.value = localStorage.getItem('edgeLanguage') || 'tr';
+            updateEdgeVoiceOptions();
+        }
+        
+        const edgeVoice = document.getElementById('edge-voice');
+        if (edgeVoice) {
+            edgeVoice.value = localStorage.getItem('edgeVoice') || 'tr-TR-EmelNeural';
+        }
+        
+        const edgeSpeed = document.getElementById('edge-speed');
+        if (edgeSpeed) {
+            edgeSpeed.value = localStorage.getItem('edgeSpeed') || 1.0;
+            updateEdgeSpeedDisplay();
+        }
+        
+        // Gemini TTS ayarları
+        const geminiTtsModel = document.getElementById('gemini-tts-model');
+        if (geminiTtsModel) {
+            geminiTtsModel.value = localStorage.getItem('geminiTtsModel') || 'gemini-2.5-flash-preview-tts';
+        }
+        
+        const geminiVoice = document.getElementById('gemini-voice');
+        if (geminiVoice) {
+            geminiVoice.value = localStorage.getItem('geminiVoice') || 'alnilam';
+        }
+        
+        // Karakter ayarları
+        const characterTheme = document.getElementById('character-theme');
+        if (characterTheme) {
+            characterTheme.value = localStorage.getItem('characterTheme') || 'default';
+        }
+        
+        const defaultEmotion = document.getElementById('default-emotion');
+        if (defaultEmotion) {
+            defaultEmotion.value = localStorage.getItem('defaultEmotion') || 'happy';
+        }
+        
+        const animationSpeed = document.getElementById('animation-speed');
+        if (animationSpeed) {
+            animationSpeed.value = localStorage.getItem('animationSpeed') || 1.0;
+            updateAnimationSpeedDisplay();
+        }
+        
+        // Gelişmiş ayarlar
+        const debugMode = document.getElementById('debug-mode');
+        if (debugMode) {
+            debugMode.checked = localStorage.getItem('debugMode') === 'true';
+        }
+        
+        const autoBackup = document.getElementById('auto-backup');
+        if (autoBackup) {
+            autoBackup.checked = localStorage.getItem('autoBackup') === 'true';
+        }
+        
+        console.log('✅ Ayarlar başarıyla yüklendi');
+        
+    } catch (error) {
+        console.error('❌ Ayarlar yüklenirken hata:', error);
+    }
+}
+
+// TTS servis ayarlarını güncelle
+function updateTTSServiceSettings() {
+    const ttsService = document.getElementById('tts-service')?.value || 'edge-tts';
+    const edgeSettings = document.getElementById('edge-tts-settings');
+    const geminiSettings = document.getElementById('gemini-tts-settings');
+    
+    if (ttsService === 'edge-tts') {
+        if (edgeSettings) edgeSettings.style.display = 'block';
+        if (geminiSettings) geminiSettings.style.display = 'none';
+    } else {
+        if (edgeSettings) edgeSettings.style.display = 'none';
+        if (geminiSettings) geminiSettings.style.display = 'block';
+    }
+}
+
+// Edge ses seçeneklerini güncelle
+function updateEdgeVoiceOptions() {
+    const languageSelect = document.getElementById('edge-language');
+    const voiceSelect = document.getElementById('edge-voice');
+    
+    if (!languageSelect || !voiceSelect) return;
+    
+    const selectedLanguage = languageSelect.value;
+    const voices = EDGE_TTS_VOICES[selectedLanguage] || {};
+    
+    // Mevcut seçenekleri temizle
+    voiceSelect.innerHTML = '';
+    
+    // Yeni seçenekleri ekle
+    Object.entries(voices).forEach(([name, voiceId]) => {
+        const option = document.createElement('option');
+        option.value = voiceId;
+        option.textContent = `${name} (${voiceId})`;
+        voiceSelect.appendChild(option);
+    });
+    
+    // Varsayılan sesi seç
+    if (voiceSelect.options.length > 0) {
+        voiceSelect.value = voiceSelect.options[0].value;
+    }
+}
+
+// Kişilik alanlarını güncelle
+function updatePersonalityFields() {
+    const personalitySelect = document.getElementById('character-personality');
+    const customGroup = document.getElementById('custom-personality-group');
+    
+    if (!personalitySelect || !customGroup) return;
+    
+    if (personalitySelect.value === 'custom') {
+        customGroup.style.display = 'block';
+    } else {
+        customGroup.style.display = 'none';
+    }
+}
+
+// Ses hızı gösterimini güncelle
+function updateEdgeSpeedDisplay() {
+    const speedSlider = document.getElementById('edge-speed');
+    const speedValue = document.getElementById('edge-speed-value');
+    
+    if (speedSlider && speedValue) {
+        speedValue.textContent = `${speedSlider.value}x`;
+    }
+}
+
+// Animasyon hızı gösterimini güncelle
+function updateAnimationSpeedDisplay() {
+    const speedSlider = document.getElementById('animation-speed');
+    const speedValue = document.getElementById('animation-speed-value');
+    
+    if (speedSlider && speedValue) {
+        speedValue.textContent = `${speedSlider.value}x`;
+    }
+}
+
+// Ses seviyesi gösterimini güncelle
+function updateVolumeDisplay() {
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeValue = document.getElementById('volume-value');
+    
+    if (volumeSlider && volumeValue) {
+        volumeValue.textContent = `${volumeSlider.value}%`;
+    }
+}
+
+// Tüm ayarları kaydet
+function saveAllSettings() {
+    try {
+        console.log('💾 Tüm ayarlar kaydediliyor...');
+        
+        // Ses ayarları
+        const volumeSlider = document.getElementById('volume-slider');
+        if (volumeSlider) {
+            localStorage.setItem('volume', volumeSlider.value);
+        }
+        
+        // Otomatik konuşma
+        const autoTalkToggle = document.getElementById('auto-talk-toggle');
+        if (autoTalkToggle) {
+            localStorage.setItem('autoTalk', autoTalkToggle.checked);
+        }
+        
+        // Varsayılan dil
+        const defaultLanguage = document.getElementById('default-language');
+        if (defaultLanguage) {
+            localStorage.setItem('defaultLanguage', defaultLanguage.value);
+        }
+        
+        // Response API Key
+        const responseApiKeyInput = document.getElementById('response-api-key-input');
+        if (responseApiKeyInput) {
+            localStorage.setItem('responseApiKey', responseApiKeyInput.value);
+        }
+        
+        // Response Model
+        const responseModel = document.getElementById('response-model');
+        if (responseModel) {
+            localStorage.setItem('responseModel', responseModel.value);
+        }
+        
+        // Karakter kişiliği
+        const characterPersonality = document.getElementById('character-personality');
+        if (characterPersonality) {
+            localStorage.setItem('characterPersonality', characterPersonality.value);
+        }
+        
+        // Özel kişilik
+        const customPersonalityText = document.getElementById('custom-personality-text');
+        if (customPersonalityText) {
+            localStorage.setItem('customPersonality', customPersonalityText.value);
+        }
+        
+        // TTS API Key
+        const ttsApiKeyInput = document.getElementById('tts-api-key-input');
+        if (ttsApiKeyInput) {
+            localStorage.setItem('ttsApiKey', ttsApiKeyInput.value);
+        }
+        
+        // TTS Servisi
+        const ttsService = document.getElementById('tts-service');
+        if (ttsService) {
+            localStorage.setItem('ttsService', ttsService.value);
+        }
+        
+        // Edge TTS ayarları
+        const edgeLanguage = document.getElementById('edge-language');
+        if (edgeLanguage) {
+            localStorage.setItem('edgeLanguage', edgeLanguage.value);
+        }
+        
+        const edgeVoice = document.getElementById('edge-voice');
+        if (edgeVoice) {
+            localStorage.setItem('edgeVoice', edgeVoice.value);
+        }
+        
+        const edgeSpeed = document.getElementById('edge-speed');
+        if (edgeSpeed) {
+            localStorage.setItem('edgeSpeed', edgeSpeed.value);
+        }
+        
+        // Gemini TTS ayarları
+        const geminiTtsModel = document.getElementById('gemini-tts-model');
+        if (geminiTtsModel) {
+            localStorage.setItem('geminiTtsModel', geminiTtsModel.value);
+        }
+        
+        const geminiVoice = document.getElementById('gemini-voice');
+        if (geminiVoice) {
+            localStorage.setItem('geminiVoice', geminiVoice.value);
+        }
+        
+        // Karakter ayarları
+        const characterTheme = document.getElementById('character-theme');
+        if (characterTheme) {
+            localStorage.setItem('characterTheme', characterTheme.value);
+        }
+        
+        const defaultEmotion = document.getElementById('default-emotion');
+        if (defaultEmotion) {
+            localStorage.setItem('defaultEmotion', defaultEmotion.value);
+        }
+        
+        const animationSpeed = document.getElementById('animation-speed');
+        if (animationSpeed) {
+            localStorage.setItem('animationSpeed', animationSpeed.value);
+        }
+        
+        // Gelişmiş ayarlar
+        const debugMode = document.getElementById('debug-mode');
+        if (debugMode) {
+            localStorage.setItem('debugMode', debugMode.checked);
+        }
+        
+        const autoBackup = document.getElementById('auto-backup');
+        if (autoBackup) {
+            localStorage.setItem('autoBackup', autoBackup.checked);
+        }
+        
+        // Başarı mesajı
+        showNotification('✅ Tüm ayarlar başarıyla kaydedildi!', 'success');
+        
+        // Değişiklikleri sıfırla
+        resetUnsavedChanges();
+        
+        // Ayarları uygula
+        applySettings();
+        
+        console.log('✅ Tüm ayarlar başarıyla kaydedildi');
+        
+    } catch (error) {
+        console.error('❌ Ayarlar kaydedilirken hata:', error);
+        showNotification('❌ Ayarlar kaydedilirken hata oluştu!', 'error');
+    }
+}
+
+// Ayarları uygula
+function applySettings() {
+    // Ses seviyesi
+    const volume = localStorage.getItem('volume') || 70;
+    if (window.audioContext) {
+        // Ses seviyesini güncelle
+        console.log(`🔊 Ses seviyesi güncellendi: ${volume}%`);
+    }
+    
+    // Otomatik konuşma
+    const autoTalk = localStorage.getItem('autoTalk') === 'true';
+    console.log(`💬 Otomatik konuşma: ${autoTalk ? 'Aktif' : 'Pasif'}`);
+    
+    // Varsayılan dil
+    const defaultLanguage = localStorage.getItem('defaultLanguage') || 'tr';
+    console.log(`🌍 Varsayılan dil: ${defaultLanguage}`);
+    
+    // Response model
+    const responseModel = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
+    console.log(`🧠 Response model: ${responseModel}`);
+    
+    // TTS servisi
+    const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
+    console.log(`🎤 TTS servisi: ${ttsService}`);
+    
+    // Karakter teması
+    const characterTheme = localStorage.getItem('characterTheme') || 'default';
+    applyCharacterTheme(characterTheme);
+    
+    // Debug modu
+    const debugMode = localStorage.getItem('debugMode') === 'true';
+    console.log(`📊 Debug modu: ${debugMode ? 'Aktif' : 'Pasif'}`);
+}
+
+// Karakter temasını uygula
+function applyCharacterTheme(theme) {
+    const root = document.documentElement;
+    
+    switch (theme) {
+        case 'dark':
+            root.style.setProperty('--primary-color', '#1f2937');
+            root.style.setProperty('--secondary-color', '#374151');
+            break;
+        case 'light':
+            root.style.setProperty('--primary-color', '#f9fafb');
+            root.style.setProperty('--secondary-color', '#e5e7eb');
+            break;
+        case 'colorful':
+            root.style.setProperty('--primary-color', '#7c3aed');
+            root.style.setProperty('--secondary-color', '#8b5cf6');
+            break;
+        default:
+            // Varsayılan tema
+            root.style.setProperty('--primary-color', '#1e1e2e');
+            root.style.setProperty('--secondary-color', '#2d2d44');
+    }
+    
+    console.log(`🎨 Karakter teması uygulandı: ${theme}`);
+}
+
+// Ayarları dışa aktar
+function exportSettings() {
+    try {
+        const settings = {};
+        
+        // Tüm ayarları topla
+        const inputs = document.querySelectorAll('.setting-group input, .setting-group select, .setting-group textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                settings[input.id] = input.checked;
+            } else {
+                settings[input.id] = input.value;
+            }
+        });
+        
+        // LocalStorage'dan da al
+        Object.keys(localStorage).forEach(key => {
+            if (!settings[key]) {
+                settings[key] = localStorage.getItem(key);
+            }
+        });
+        
+        // JSON dosyası olarak indir
+        const dataStr = JSON.stringify(settings, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `anime-chatbot-settings-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        
+        showNotification('✅ Ayarlar başarıyla dışa aktarıldı!', 'success');
+        
+    } catch (error) {
+        console.error('❌ Ayarlar dışa aktarılırken hata:', error);
+        showNotification('❌ Ayarlar dışa aktarılırken hata oluştu!', 'error');
+    }
+}
+
+// Ayarları içe aktar
+function importSettings(file) {
+    try {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const settings = JSON.parse(e.target.result);
+                
+                // Ayarları uygula
+                Object.entries(settings).forEach(([key, value]) => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = value;
+                        } else {
+                            element.value = value;
+                        }
+                    }
+                    // LocalStorage'a da kaydet
+                    localStorage.setItem(key, value);
+                });
+                
+                // UI'ı güncelle
+                updateTTSServiceSettings();
+                updateEdgeVoiceOptions();
+                updatePersonalityFields();
+                updateEdgeSpeedDisplay();
+                updateAnimationSpeedDisplay();
+                updateVolumeDisplay();
+                
+                showNotification('✅ Ayarlar başarıyla içe aktarıldı!', 'success');
+                
+            } catch (error) {
+                console.error('❌ JSON parse hatası:', error);
+                showNotification('❌ Geçersiz ayar dosyası!', 'error');
+            }
+        };
+        reader.readAsText(file);
+        
+    } catch (error) {
+        console.error('❌ Dosya okuma hatası:', error);
+        showNotification('❌ Dosya okunamadı!', 'error');
+    }
+}
