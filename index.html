@@ -99,19 +99,64 @@
             <div class="setting-item">
                 <label for="tts-model">TTS Modeli</label>
                 <select id="tts-model" class="model-select">
-                    <option value="gemini-2.5-flash-preview-tts" selected>Gemini 2.5 Flash Preview TTS (500) ✅</option>
+                    <option value="edge-tts" selected>Edge TTS (Ücretsiz, Sınırsız) 🆓</option>
+                    <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS (500) ✅</option>
                     <option value="gemini-2.0-flash-preview-tts">Gemini 2.0 Flash Preview TTS (500) ✅</option>
                 </select>
-                <div class="warning-text" style="background: #059669; border-left-color: #10b981;">
-                    ✅ Bu modeller TTS destekliyor
+                
+                <!-- Edge TTS Ayarları -->
+                <div id="edge-tts-settings" class="tts-settings">
+                    <div class="setting-item">
+                        <label for="edge-language">Dil Seçimi</label>
+                        <select id="edge-language" class="language-select">
+                            <option value="tr" selected>🇹🇷 Türkçe</option>
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="zh">🇨🇳 中文</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="edge-voice">Ses Seçimi</label>
+                        <select id="edge-voice" class="voice-select">
+                            <!-- JavaScript ile doldurulacak -->
+                        </select>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="edge-speed">Ses Hızı</label>
+                        <div class="slider-container">
+                            <input type="range" id="edge-speed" min="0.5" max="2.0" step="0.1" value="1.0" class="slider">
+                            <span id="edge-speed-value">1.0x</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Ses Seçimi -->
-                <div class="setting-item">
-                    <label for="voice-select">Ses Seçimi</label>
-                    <select id="voice-select" class="voice-select">
-                        <!-- Erkek Sesler -->
-                        <optgroup label="Erkek Sesler">
+                <!-- Gemini TTS Ayarları -->
+                <div id="gemini-tts-settings" class="tts-settings" style="display: none;">
+                    <div class="setting-item">
+                        <label for="gemini-voice">Gemini Ses</label>
+                        <select id="gemini-voice" class="voice-select">
+                            <option value="alnilam" selected>alnilam (Kadın) - Varsayılan</option>
+                            <option value="aoede">aoede (Kadın)</option>
+                            <option value="autonoe">autonoe (Kadın)</option>
+                            <option value="callirrhoe">callirrhoe (Kadın)</option>
+                            <option value="despina">despina (Kadın)</option>
+                            <option value="erinome">erinome (Kadın)</option>
+                            <option value="kore">kore (Kadın)</option>
+                            <option value="laomedeia">laomedeia (Kadın)</option>
+                            <option value="leda">leda (Kadın)</option>
+                            <option value="pulcherrima">pulcherrima (Kadın)</option>
+                            <option value="schedar">schedar (Kadın)</option>
+                            <option value="umbriel">umbriel (Kadın)</option>
+                            <option value="vindemiatrix">vindemiatrix (Kadın)</option>
+                            <!-- Erkek Sesler -->
                             <option value="achernar">achernar (Erkek)</option>
                             <option value="achird">achird (Erkek)</option>
                             <option value="algenib">algenib (Erkek)</option>
@@ -129,28 +174,12 @@
                             <option value="sulafat">sulafat (Erkek)</option>
                             <option value="zephyr">zephyr (Erkek)</option>
                             <option value="zubenelgenubi">zubenelgenubi (Erkek)</option>
-                        </optgroup>
-                        <!-- Kadın Sesler -->
-                        <optgroup label="Kadın Sesler">
-                            <option value="alnilam" selected>alnilam (Kadın) - Varsayılan</option>
-                            <option value="aoede">aoede (Kadın)</option>
-                            <option value="autonoe">autonoe (Kadın)</option>
-                            <option value="callirrhoe">callirrhoe (Kadın)</option>
-                            <option value="despina">despina (Kadın)</option>
-                            <option value="erinome">erinome (Kadın)</option>
-                            <option value="kore">kore (Kadın)</option>
-                            <option value="laomedeia">laomedeia (Kadın)</option>
-                            <option value="leda">leda (Kadın)</option>
-                            <option value="pulcherrima">pulcherrima (Kadın)</option>
-                            <option value="schedar">schedar (Kadın)</option>
-                            <option value="umbriel">umbriel (umbriel)</option>
-                            <option value="vindemiatrix">vindemiatrix (Kadın)</option>
-                        </optgroup>
-                    </select>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="limit-info" id="tts-limit-info">
-                    📊 Günlük: 1500 istek | Kullanılan: <span id="tts-used">0</span>
+                    📊 Günlük: <span id="tts-limit-text">Sınırsız</span> | Kullanılan: <span id="tts-used">0</span>
                 </div>
             </div>
 
