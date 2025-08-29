@@ -35,167 +35,302 @@
         </svg>
     </div>
 
-    <!-- Settings Panel - Outside UI Container -->
-    <div id="settings-panel" class="settings-panel hidden">
-        <div class="settings-header">
-            <h3>Ayarlar</h3>
-            <button id="close-settings" class="close-btn">×</button>
-        </div>
-        
+    <!-- Settings Modal - Center of screen -->
+    <div id="settings-modal" class="settings-modal hidden">
         <div class="settings-content">
-            <!-- Response API Key Input -->
-            <div class="setting-item">
-                <label for="response-api-key-input">Response API Key (Gemini)</label>
-                <div class="api-key-container">
-                    <input type="password" id="response-api-key-input" placeholder="Response API key'inizi buraya girin..." class="api-key-input">
-                    <button id="save-response-api-key" class="save-btn">Kaydet</button>
-                </div>
-                <div class="api-status" id="response-api-status">
-                    <span id="response-api-tier-info">🔍 Response API analiz ediliyor...</span>
-                </div>
+            <!-- Header -->
+            <div class="settings-header">
+                <h2>⚙️ Ayarlar</h2>
+                <button id="close-settings" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-
-            <!-- TTS API Key Input -->
-            <div class="setting-item">
-                <label for="tts-api-key-input">TTS API Key (Gemini TTS)</label>
-                <div class="api-key-container">
-                    <input type="password" id="tts-api-key-input" placeholder="TTS API key'inizi buraya girin..." class="api-key-input">
-                    <button id="save-tts-api-key" class="save-btn">Kaydet</button>
-                </div>
-                <div class="api-status" id="tts-api-status">
-                    <span id="tts-api-tier-info">🔍 TTS API analiz ediliyor...</span>
-                </div>
-                <div class="warning-text">
-                    ⚠️ DİKKAT: Response ve TTS için farklı API key kullanın!<br>
-                    Aynı API key kullanımında hata verebilir ve limitler karışabilir.
-                </div>
+            
+            <!-- Kategoriler -->
+            <div class="settings-tabs">
+                <button class="tab-btn active" data-tab="general">
+                    <i class="fas fa-home"></i>
+                    Genel
+                </button>
+                <button class="tab-btn" data-tab="ai">
+                    <i class="fas fa-brain"></i>
+                    AI & Cevap
+                </button>
+                <button class="tab-btn" data-tab="voice">
+                    <i class="fas fa-microphone"></i>
+                    Ses & TTS
+                </button>
+                <button class="tab-btn" data-tab="character">
+                    <i class="fas fa-user"></i>
+                    Karakter
+                </button>
+                <button class="tab-btn" data-tab="advanced">
+                    <i class="fas fa-tools"></i>
+                    Gelişmiş
+                </button>
             </div>
-
-            <!-- Volume Control -->
-            <div class="setting-item">
-                <label for="volume-slider">Ses Seviyesi</label>
-                <div class="slider-container">
-                    <input type="range" id="volume-slider" min="0" max="100" value="70" class="slider">
-                    <span id="volume-value">70%</span>
-                </div>
-            </div>
-
-            <!-- Response Model Selection -->
-            <div class="setting-item">
-                <label for="response-model">Cevap Modeli</label>
-                <select id="response-model" class="model-select">
-                    <option value="gemini-2.5-flash-lite" selected>Gemini 2.5 Flash Lite (1000 limit)</option>
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (250 limit)</option>
-                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (100 limit)</option>
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (50 limit)</option>
-                    <option value="gemini-1.0-pro">Gemini 1.0 Pro (1500 limit)</option>
-                </select>
-                <div class="limit-info" id="response-limit-info">
-                    📊 Günlük: 1500 istek | Kullanılan: <span id="response-used">0</span>
-                </div>
-            </div>
-
-            <!-- TTS Model Selection -->
-            <div class="setting-item">
-                <label for="tts-model">TTS Modeli</label>
-                <select id="tts-model" class="model-select">
-                    <option value="edge-tts" selected>Edge TTS (Ücretsiz, Sınırsız) 🆓</option>
-                    <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS (500) ✅</option>
-                    <option value="gemini-2.0-flash-preview-tts">Gemini 2.0 Flash Preview TTS (500) ✅</option>
-                </select>
-                
-                <!-- Edge TTS Ayarları -->
-                <div id="edge-tts-settings" class="tts-settings">
-                    <div class="setting-item">
-                        <label for="edge-language">Dil Seçimi</label>
-                        <select id="edge-language" class="language-select">
-                            <option value="tr" selected>🇹🇷 Türkçe</option>
-                            <option value="en">🇺🇸 English</option>
-                            <option value="ja">🇯🇵 日本語</option>
-                            <option value="ko">🇰🇷 한국어</option>
-                            <option value="zh">🇨🇳 中文</option>
-                            <option value="de">🇩🇪 Deutsch</option>
-                            <option value="fr">🇫🇷 Français</option>
-                            <option value="es">🇪🇸 Español</option>
-                            <option value="it">🇮🇹 Italiano</option>
-                            <option value="ru">🇷🇺 Русский</option>
-                        </select>
-                    </div>
+            
+            <!-- Tab İçerikleri -->
+            <div class="tab-content">
+                <!-- Genel Ayarlar -->
+                <div id="general-tab" class="tab-panel active">
+                    <h3>🎮 Genel Ayarlar</h3>
                     
-                    <div class="setting-item">
-                        <label for="edge-voice">Ses Seçimi</label>
-                        <select id="edge-voice" class="voice-select">
-                            <!-- JavaScript ile doldurulacak -->
-                        </select>
-                    </div>
-                    
-                    <div class="setting-item">
-                        <label for="edge-speed">Ses Hızı</label>
+                    <div class="setting-group">
+                        <label>🔊 Ses Seviyesi</label>
                         <div class="slider-container">
-                            <input type="range" id="edge-speed" min="0.5" max="2.0" step="0.1" value="1.0" class="slider">
-                            <span id="edge-speed-value">1.0x</span>
+                            <input type="range" id="volume-slider" min="0" max="100" value="70">
+                            <span id="volume-value">70%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💬 Otomatik Konuşma</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="auto-talk-toggle">
+                            <label for="auto-talk-toggle" class="toggle-label"></label>
+                            <span>Karakterin kendiliğinden konuşmasına izin ver</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🌍 Varsayılan Dil</label>
+                        <select id="default-language">
+                            <option value="tr">Türkçe</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="ko">한국어</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- AI & Cevap Ayarları -->
+                <div id="ai-tab" class="tab-panel">
+                    <h3>🧠 AI & Cevap Ayarları</h3>
+                    
+                    <div class="setting-group">
+                        <label>🔑 Response API Key</label>
+                        <div class="api-input-container">
+                            <input type="password" id="response-api-key-input" placeholder="API Key girin...">
+                            <button id="save-response-api-key" class="save-btn">Kaydet</button>
+                        </div>
+                        <div id="response-api-status" class="api-status"></div>
+                        <div id="response-api-tier-info" class="tier-info"></div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>📝 Response Model</label>
+                        <select id="response-model">
+                            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎭 Karakter Kişiliği</label>
+                        <select id="character-personality">
+                            <option value="cute">Sevimli & Tatlı</option>
+                            <option value="shy">Utangaç & Nazik</option>
+                            <option value="energetic">Enerjik & Neşeli</option>
+                            <option value="mysterious">Gizemli & Sakin</option>
+                            <option value="custom">Özel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group" id="custom-personality-group" style="display: none;">
+                        <label>✏️ Özel Kişilik</label>
+                        <textarea id="custom-personality-text" placeholder="Karakterin kişiliğini tanımlayın..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Ses & TTS Ayarları -->
+                <div id="voice-tab" class="tab-panel">
+                    <h3>🎤 Ses & TTS Ayarları</h3>
+                    
+                    <div class="setting-group">
+                        <label>🔑 TTS API Key</label>
+                        <div class="api-input-container">
+                            <input type="password" id="tts-api-key-input" placeholder="TTS API Key girin...">
+                            <button id="save-tts-api-key" class="save-btn">Kaydet</button>
+                        </div>
+                        <div id="tts-api-status" class="api-status"></div>
+                        <div id="tts-api-tier-info" class="tier-info"></div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🎭 TTS Servisi</label>
+                        <select id="tts-service">
+                            <option value="edge-tts">Edge TTS (Ücretsiz, Sınırsız)</option>
+                            <option value="gemini-tts">Gemini TTS (15/gün)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Edge TTS Ayarları -->
+                    <div id="edge-tts-settings" class="tts-settings">
+                        <div class="setting-group">
+                            <label>🌍 Dil Seçimi</label>
+                            <select id="edge-language">
+                                <option value="tr">Türkçe</option>
+                                <option value="en">English</option>
+                                <option value="ja">日本語</option>
+                                <option value="ko">한국어</option>
+                                <option value="zh">中文</option>
+                                <option value="de">Deutsch</option>
+                                <option value="fr">Français</option>
+                                <option value="es">Español</option>
+                                <option value="it">Italiano</option>
+                                <option value="ru">Русский</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label>🎭 Ses Seçimi</label>
+                            <select id="edge-voice">
+                                <!-- JavaScript ile doldurulacak -->
+                            </select>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label>⚡ Ses Hızı</label>
+                            <div class="slider-container">
+                                <input type="range" id="edge-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                                <span id="edge-speed-value">1.0x</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gemini TTS Ayarları -->
+                    <div id="gemini-tts-settings" class="tts-settings" style="display: none;">
+                        <div class="setting-group">
+                            <label>🧠 Gemini TTS Model</label>
+                            <select id="gemini-tts-model">
+                                <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash Preview TTS</option>
+                                <option value="gemini-2.0-flash-preview-tts">Gemini 2.0 Flash Preview TTS</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <label>🎭 Gemini Ses</label>
+                            <select id="gemini-voice">
+                                <option value="alnilam">alnilam (Kadın) - Varsayılan</option>
+                                <option value="aoede">aoede (Kadın)</option>
+                                <option value="autonoe">autonoe (Kadın)</option>
+                                <option value="callirrhoe">callirrhoe (Kadın)</option>
+                                <option value="despina">despina (Kadın)</option>
+                                <option value="erinome">erinome (Kadın)</option>
+                                <option value="kore">kore (Kadın)</option>
+                                <option value="laomedeia">laomedeia (Kadın)</option>
+                                <option value="leda">leda (Kadın)</option>
+                                <option value="pulcherrima">pulcherrima (Kadın)</option>
+                                <option value="schedar">schedar (Kadın)</option>
+                                <option value="umbriel">umbriel (Kadın)</option>
+                                <option value="vindemiatrix">vindemiatrix (Kadın)</option>
+                                <!-- Erkek Sesler -->
+                                <option value="achernar">achernar (Erkek)</option>
+                                <option value="achird">achird (Erkek)</option>
+                                <option value="algenib">algenib (Erkek)</option>
+                                <option value="algieba">algieba (Erkek)</option>
+                                <option value="charon">charon (Erkek)</option>
+                                <option value="enceladus">enceladus (Erkek)</option>
+                                <option value="fenrir">fenrir (Erkek)</option>
+                                <option value="gacrux">gacrux (Erkek)</option>
+                                <option value="iapetus">iapetus (Erkek)</option>
+                                <option value="orus">orus (Erkek)</option>
+                                <option value="puck">puck (Erkek)</option>
+                                <option value="rasalgethi">rasalgethi (Erkek)</option>
+                                <option value="sadachbia">sadachbia (Erkek)</option>
+                                <option value="sadaltager">sadaltager (Erkek)</option>
+                                <option value="sulafat">sulafat (Erkek)</option>
+                                <option value="zephyr">zephyr (Erkek)</option>
+                                <option value="zubenelgenubi">zubenelgenubi (Erkek)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Gemini TTS Ayarları -->
-                <div id="gemini-tts-settings" class="tts-settings" style="display: none;">
-                    <div class="setting-item">
-                        <label for="gemini-voice">Gemini Ses</label>
-                        <select id="gemini-voice" class="voice-select">
-                            <option value="alnilam" selected>alnilam (Kadın) - Varsayılan</option>
-                            <option value="aoede">aoede (Kadın)</option>
-                            <option value="autonoe">autonoe (Kadın)</option>
-                            <option value="callirrhoe">callirrhoe (Kadın)</option>
-                            <option value="despina">despina (Kadın)</option>
-                            <option value="erinome">erinome (Kadın)</option>
-                            <option value="kore">kore (Kadın)</option>
-                            <option value="laomedeia">laomedeia (Kadın)</option>
-                            <option value="leda">leda (Kadın)</option>
-                            <option value="pulcherrima">pulcherrima (Kadın)</option>
-                            <option value="schedar">schedar (Kadın)</option>
-                            <option value="umbriel">umbriel (Kadın)</option>
-                            <option value="vindemiatrix">vindemiatrix (Kadın)</option>
-                            <!-- Erkek Sesler -->
-                            <option value="achernar">achernar (Erkek)</option>
-                            <option value="achird">achird (Erkek)</option>
-                            <option value="algenib">algenib (Erkek)</option>
-                            <option value="algieba">algieba (Erkek)</option>
-                            <option value="charon">charon (Erkek)</option>
-                            <option value="enceladus">enceladus (Erkek)</option>
-                            <option value="fenrir">fenrir (Erkek)</option>
-                            <option value="gacrux">gacrux (Erkek)</option>
-                            <option value="iapetus">iapetus (Erkek)</option>
-                            <option value="orus">orus (Erkek)</option>
-                            <option value="puck">puck (Erkek)</option>
-                            <option value="rasalgethi">rasalgethi (Erkek)</option>
-                            <option value="sadachbia">sadachbia (Erkek)</option>
-                            <option value="sadaltager">sadaltager (Erkek)</option>
-                            <option value="sulafat">sulafat (Erkek)</option>
-                            <option value="zephyr">zephyr (Erkek)</option>
-                            <option value="zubenelgenubi">zubenelgenubi (Erkek)</option>
+                <!-- Karakter Ayarları -->
+                <div id="character-tab" class="tab-panel">
+                    <h3>👤 Karakter Ayarları</h3>
+                    
+                    <div class="setting-group">
+                        <label>🎨 Karakter Teması</label>
+                        <select id="character-theme">
+                            <option value="default">Varsayılan</option>
+                            <option value="dark">Karanlık</option>
+                            <option value="light">Aydınlık</option>
+                            <option value="colorful">Renkli</option>
                         </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💭 Varsayılan Duygu</label>
+                        <select id="default-emotion">
+                            <option value="happy">Mutlu</option>
+                            <option value="neutral">Nötr</option>
+                            <option value="shy">Utangaç</option>
+                            <option value="excited">Heyecanlı</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🔄 Animasyon Hızı</label>
+                        <div class="slider-container">
+                            <input type="range" id="animation-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <span id="animation-speed-value">1.0x</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="limit-info" id="tts-limit-info">
-                    📊 Günlük: <span id="tts-limit-text">Sınırsız</span> | Kullanılan: <span id="tts-used">0</span>
+                <!-- Gelişmiş Ayarlar -->
+                <div id="advanced-tab" class="tab-panel">
+                    <h3>🛠️ Gelişmiş Ayarlar</h3>
+                    
+                    <div class="setting-group">
+                        <label>📊 Debug Modu</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="debug-mode">
+                            <label for="debug-mode" class="toggle-label"></label>
+                            <span>Detaylı log ve debug bilgileri</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>💾 Otomatik Yedekleme</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="auto-backup">
+                            <label for="auto-backup" class="toggle-label"></label>
+                            <span>Ayarları otomatik yedekle</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>🔄 Ayarları Sıfırla</label>
+                        <button id="reset-settings" class="danger-btn">Tüm Ayarları Sıfırla</button>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>📤 Ayarları Dışa Aktar</label>
+                        <button id="export-settings" class="export-btn">JSON Olarak İndir</button>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>📥 Ayarları İçe Aktar</label>
+                        <input type="file" id="import-settings" accept=".json">
+                    </div>
                 </div>
             </div>
-
-            <!-- Auto Talk Toggle -->
-            <div class="setting-item">
-                <label for="auto-talk-toggle">Otomatik Konuşma</label>
-                <div class="toggle-container">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="auto-talk-toggle">
-                        <span class="toggle-slider"></span>
-                    </label>
+            
+            <!-- Footer -->
+            <div class="settings-footer">
+                <div class="unsaved-changes" id="unsaved-changes" style="display: none;">
+                    ⚠️ Kaydedilmemiş değişiklikler var
                 </div>
-                <div class="warning-text" id="auto-talk-warning">
-                    🚫 DİKKAT: API limitinizi hızla bitirir!<br>
-                    Farklı API'ler kullanarak limiti dengeleyebilirsiniz.<br>
-                    ⚡ Fallback sistem her zaman aktiftir.
+                <div class="footer-buttons">
+                    <button id="cancel-settings" class="cancel-btn">İptal</button>
+                    <button id="save-all-settings" class="save-all-btn">Tümünü Kaydet</button>
                 </div>
             </div>
         </div>
