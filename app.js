@@ -782,8 +782,11 @@ async function speakText(text) {
     isSpeaking = true;
     
     try {
-        // TTS modeline göre ses üret
-        if (currentTTSModel === 'edge-tts') {
+        // TTS servis seçimini kontrol et
+        const ttsService = document.getElementById('tts-service')?.value || 'edge-tts';
+        console.log(`🔊 TTS Servis seçildi: ${ttsService}`);
+        
+        if (ttsService === 'edge-tts') {
             // Edge TTS kullan
             console.log('🎵 Using Edge TTS...');
             
@@ -812,7 +815,7 @@ async function speakText(text) {
                 throw new Error('Edge TTS returned no audio buffer');
             }
             
-        } else {
+        } else if (ttsService === 'gemini-tts') {
             // Gemini TTS kullan
             console.log('🎵 Attempting Gemini TTS generation...');
             const audioBuffer = await generateTTS(text);
@@ -824,6 +827,8 @@ async function speakText(text) {
                 console.log('❌ Gemini TTS returned null - using text simulation');
                 throw new Error('Gemini TTS returned no audio buffer');
             }
+        } else {
+            throw new Error(`Unknown TTS service: ${ttsService}`);
         }
         
     } catch (error) {
@@ -2170,11 +2175,11 @@ function loadCurrentSettings() {
     // Mevcut ayarları yükle
     currentSettings = {
         apiKey: apiUsage.responseApiKey || '',
-        ttsService: localStorage.getItem('ttsService') || 'gemini',
+        ttsService: localStorage.getItem('ttsService') || 'edge-tts',
         geminiTTSModel: localStorage.getItem('geminiTTSModel') || 'gemini-2.5-flash-preview-tts',
-        geminiVoice: localStorage.getItem('geminiVoice') || 'gemini-1.5-flash',
-        edgeLanguage: localStorage.getItem('edgeLanguage') || 'tr-TR',
-        edgeVoice: localStorage.getItem('edgeVoice') || 'tr-TR-AhmetNeural',
+        geminiVoice: localStorage.getItem('geminiVoice') || 'alnilam',
+        edgeLanguage: localStorage.getItem('edgeLanguage') || 'tr',
+        edgeVoice: localStorage.getItem('edgeVoice') || 'tr-TR-EmelNeural',
         edgeSpeed: parseFloat(localStorage.getItem('edgeSpeed')) || 1.0,
         volume: parseFloat(localStorage.getItem('volume')) || 0.7,
         animationSpeed: parseFloat(localStorage.getItem('animationSpeed')) || 1.0,
@@ -2182,10 +2187,19 @@ function loadCurrentSettings() {
         characterPersonality: localStorage.getItem('characterPersonality') || 'friendly',
         characterName: localStorage.getItem('characterName') || 'Anime Kız',
         uiTheme: localStorage.getItem('uiTheme') || 'auto',
-        colorIntensity: parseFloat(localStorage.getItem('colorIntensity')) || 50,
-        transparency: parseFloat(localStorage.getItem('transparency')) || 50,
-        borderRadius: parseFloat(localStorage.getItem('borderRadius')) || 10
+        colorIntensity: parseFloat(localStorage.getItem('colorIntensity')) || 70,
+        transparency: parseFloat(localStorage.getItem('transparency')) || 20,
+        borderRadius: parseFloat(localStorage.getItem('borderRadius')) || 12
     };
+    
+    // TTS servis seçimini global değişkene yansıt
+    if (currentSettings.ttsService === 'edge-tts') {
+        currentTTSModel = 'edge-tts';
+    } else if (currentSettings.ttsService === 'gemini-tts') {
+        currentTTSModel = currentSettings.geminiTTSModel;
+    }
+    
+    console.log(`🔊 TTS Servis yüklendi: ${currentSettings.ttsService}, Model: ${currentTTSModel}`);
     
     // Form elementlerini güncelle
     updateSettingsForm();
@@ -2198,7 +2212,11 @@ function updateSettingsForm() {
     
     // TTS Service
     const ttsServiceSelect = document.getElementById('tts-service');
-    if (ttsServiceSelect) ttsServiceSelect.value = currentSettings.ttsService;
+    if (ttsServiceSelect) {
+        ttsServiceSelect.value = currentSettings.ttsService;
+        // TTS servis değişikliğini hemen uygula
+        updateTTSServiceSettings();
+    }
     
     // Gemini TTS Model
     const geminiTTSModelSelect = document.getElementById('gemini-tts-model');
@@ -2269,19 +2287,33 @@ function updateSettingsForm() {
 }
 
 function updateTTSServiceSettings() {
-    const ttsService = document.getElementById('tts-service')?.value || 'gemini';
+    const ttsService = document.getElementById('tts-service')?.value || 'edge-tts';
     const geminiSettings = document.getElementById('gemini-tts-settings');
     const edgeSettings = document.getElementById('edge-tts-settings');
     
+    console.log(`🔧 TTS Servis ayarları güncelleniyor: ${ttsService}`);
+    
     if (geminiSettings && edgeSettings) {
-        if (ttsService === 'gemini') {
+        if (ttsService === 'gemini-tts') {
             geminiSettings.style.display = 'block';
             edgeSettings.style.display = 'none';
-        } else {
+            console.log('✅ Gemini TTS ayarları gösteriliyor');
+        } else if (ttsService === 'edge-tts') {
             geminiSettings.style.display = 'none';
             edgeSettings.style.display = 'block';
+            console.log('✅ Edge TTS ayarları gösteriliyor');
         }
     }
+    
+    // Global TTS model değişkenini güncelle
+    if (ttsService === 'edge-tts') {
+        currentTTSModel = 'edge-tts';
+    } else if (ttsService === 'gemini-tts') {
+        const geminiModel = document.getElementById('gemini-tts-model')?.value || 'gemini-2.5-flash-preview-tts';
+        currentTTSModel = geminiModel;
+    }
+    
+    console.log(`🔊 Global TTS Model güncellendi: ${currentTTSModel}`);
 }
 
 function updateEdgeVoiceOptions() {
@@ -2463,7 +2495,16 @@ function saveAllSettings() {
         apiUsage.responseApiKey = newSettings.apiKey;
         volumeLevel = newSettings.volume;
         autoTalkEnabled = newSettings.autoTalk;
-        currentTTSModel = newSettings.geminiTTSModel;
+        
+        // TTS servis seçimini güncelle
+        const ttsService = newSettings.ttsService;
+        if (ttsService === 'edge-tts') {
+            currentTTSModel = 'edge-tts';
+        } else if (ttsService === 'gemini-tts') {
+            currentTTSModel = newSettings.geminiTTSModel;
+        }
+        
+        console.log(`🔊 TTS Servis güncellendi: ${ttsService}, Model: ${currentTTSModel}`);
         
         // Ayarları uygula
         applySettings(newSettings);
@@ -2474,6 +2515,11 @@ function saveAllSettings() {
         
         // Başarı mesajı göster
         showNotification('✅ Ayarlar başarıyla kaydedildi!', 'success');
+        
+        // 2 saniye sonra modal'ı kapat
+        setTimeout(() => {
+            closeSettingsModal();
+        }, 2000);
         
         console.log('✅ Tüm ayarlar kaydedildi');
         
@@ -2644,47 +2690,76 @@ function resetAllSettings() {
 }
 
 function showNotification(message, type = 'info') {
-    // Basit notification sistemi
+    // Modern notification sistemi
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = message;
+    
+    // Icon ekle
+    let icon = '';
+    switch (type) {
+        case 'success':
+            icon = '✅';
+            break;
+        case 'error':
+            icon = '❌';
+            break;
+        case 'warning':
+            icon = '⚠️';
+            break;
+        default:
+            icon = 'ℹ️';
+    }
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">${icon}</span>
+            <span>${message}</span>
+        </div>
+    `;
+    
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        padding: 12px 20px;
-        border-radius: 8px;
+        padding: 16px 24px;
+        border-radius: 12px;
         color: white;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 14px;
         z-index: 10000;
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.4s ease-out;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        min-width: 300px;
+        text-align: center;
     `;
     
-    // Tip'e göre renk
+    // Tip'e göre renk ve gradient
     switch (type) {
         case 'success':
-            notification.style.background = '#10b981';
+            notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
             break;
         case 'error':
-            notification.style.background = '#ef4444';
+            notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
             break;
         case 'warning':
-            notification.style.background = '#f59e0b';
+            notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
             break;
         default:
-            notification.style.background = '#6366f1';
+            notification.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
     }
     
     document.body.appendChild(notification);
     
     // 3 saniye sonra kaldır
     setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-in';
+        notification.style.animation = 'slideOut 0.4s ease-in';
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-        }, 300);
+        }, 400);
     }, 3000);
 }
 
@@ -2692,12 +2767,34 @@ function showNotification(message, type = 'info') {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from { 
+            transform: translateX(100%) scale(0.8); 
+            opacity: 0; 
+        }
+        to { 
+            transform: translateX(0) scale(1); 
+            opacity: 1; 
+        }
     }
     @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+        from { 
+            transform: translateX(0) scale(1); 
+            opacity: 1; 
+        }
+        to { 
+            transform: translateX(100%) scale(0.8); 
+            opacity: 0; 
+        }
+    }
+    
+    .notification {
+        transition: all 0.3s ease;
+    }
+    
+    .notification:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
 `;
 document.head.appendChild(style);
+
