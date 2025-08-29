@@ -782,27 +782,60 @@ async function speakText(text) {
     isSpeaking = true;
     
     try {
-        // Try Gemini TTS first
-        console.log('🎵 Attempting Gemini TTS generation...');
-        const audioBuffer = await generateTTS(text);
-        if (audioBuffer) {
-            console.log('✅ Gemini TTS successful, playing audio');
-            playAudio(audioBuffer);
-            return;
+        // TTS modeline göre ses üret
+        if (currentTTSModel === 'edge-tts') {
+            // Edge TTS kullan
+            console.log('🎵 Using Edge TTS...');
+            
+            // Edge TTS ayarlarını al
+            const edgeLanguage = document.getElementById('edge-language')?.value || 'tr';
+            const edgeVoice = document.getElementById('edge-voice')?.value || 'tr-TR-EmelNeural';
+            const edgeSpeed = parseFloat(document.getElementById('edge-speed')?.value || 1.0);
+            
+            // Dil tespiti yap
+            const detectedLang = detectLanguage(text);
+            let selectedVoice = edgeVoice;
+            
+            // Eğer tespit edilen dil farklıysa, o dildeki uygun sesi seç
+            if (detectedLang !== edgeLanguage) {
+                selectedVoice = getVoiceForLanguage(detectedLang, 'female');
+                console.log(`🌍 Language detected: ${detectedLang}, using voice: ${selectedVoice}`);
+            }
+            
+            const audioBuffer = await generateEdgeTTS(text, selectedVoice, edgeSpeed);
+            if (audioBuffer) {
+                console.log('✅ Edge TTS successful, playing audio');
+                playAudio(audioBuffer);
+                return;
+            } else {
+                console.log('❌ Edge TTS returned null - using text simulation');
+                throw new Error('Edge TTS returned no audio buffer');
+            }
+            
         } else {
-            console.log('❌ Gemini TTS returned null - using text simulation');
-            throw new Error('Gemini TTS returned no audio buffer');
+            // Gemini TTS kullan
+            console.log('🎵 Attempting Gemini TTS generation...');
+            const audioBuffer = await generateTTS(text);
+            if (audioBuffer) {
+                console.log('✅ Gemini TTS successful, playing audio');
+                playAudio(audioBuffer);
+                return;
+            } else {
+                console.log('❌ Gemini TTS returned null - using text simulation');
+                throw new Error('Gemini TTS returned no audio buffer');
+            }
         }
+        
     } catch (error) {
-        console.error('❌ Gemini TTS failed, using text simulation:', error);
+        console.error('❌ TTS failed, using text simulation:', error);
         
         // Check if it's a rate limit error (429)
         if (error.message.includes('429')) {
-            console.log('🚫 Gemini TTS rate limit exceeded - using text simulation');
-            updateStatus('Gemini TTS limit aşıldı - metin simülasyonu kullanılıyor...');
+            console.log('🚫 TTS rate limit exceeded - using text simulation');
+            updateStatus('TTS limit aşıldı - metin simülasyonu kullanılıyor...');
         } else {
-            console.log('⚠️ Gemini TTS error - using text simulation');
-            updateStatus('Gemini TTS hatası - metin simülasyonu kullanılıyor...');
+            console.log('⚠️ TTS error - using text simulation');
+            updateStatus('TTS hatası - metin simülasyonu kullanılıyor...');
         }
         
         // Fallback: simulate speech
