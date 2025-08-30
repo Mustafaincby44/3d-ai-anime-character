@@ -1296,3 +1296,188 @@ input[type="color"]::-webkit-color-swatch {
     color: #6366f1;
     margin-left: auto;
 }
+
+/* Mobile Responsive CSS */
+@media (max-width: 768px) {
+    /* Settings Modal Mobile */
+    .settings-modal {
+        width: 95%;
+        max-width: none;
+        margin: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .settings-content {
+        padding: 15px;
+    }
+    
+    .settings-header h2 {
+        font-size: 20px;
+    }
+    
+    /* Tabs Mobile */
+    .settings-tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        min-width: 120px;
+        font-size: 14px;
+        padding: 12px 8px;
+    }
+    
+    .tab-btn i {
+        font-size: 16px;
+        margin-right: 6px;
+    }
+    
+    /* Setting Groups Mobile */
+    .setting-group {
+        margin-bottom: 20px;
+    }
+    
+    .setting-group label {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    /* Input Fields Mobile */
+    .setting-group input,
+    .setting-group select {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    /* Slider Container Mobile */
+    .slider-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .slider-container input[type="range"] {
+        width: 100%;
+    }
+    
+    .slider-container span {
+        text-align: center;
+        min-width: auto;
+    }
+    
+    /* Color Options Mobile */
+    .color-options {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .color-option {
+        width: 100%;
+    }
+    
+    /* Toggle Container Mobile */
+    .toggle-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    /* Footer Buttons Mobile */
+    .footer-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .footer-buttons button {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+    }
+    
+    /* API Limit Toggle Mobile */
+    .api-limit-toggle {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+    }
+    
+    .toggle-arrow {
+        font-size: 18px;
+    }
+    
+    /* API Limit Panel Mobile */
+    .api-limit-panel {
+        width: 90%;
+        min-width: 280px;
+        top: 70px;
+        padding: 15px;
+    }
+    
+    .limit-header {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .limit-item {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .limit-label {
+        min-width: 70px;
+        font-size: 14px;
+    }
+    
+    .limit-usage {
+        font-size: 14px;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 480px) {
+    .settings-modal {
+        width: 98%;
+        margin: 5px;
+        max-height: 95vh;
+    }
+    
+    .settings-content {
+        padding: 12px;
+    }
+    
+    .tab-btn {
+        min-width: 100px;
+        font-size: 13px;
+        padding: 10px 6px;
+    }
+    
+    .setting-group input,
+    .setting-group select {
+        font-size: 16px;
+        padding: 14px;
+    }
+    
+    .footer-buttons button {
+        padding: 18px;
+        font-size: 18px;
+    }
+    
+    .api-limit-toggle {
+        width: 40px;
+        height: 40px;
+        top: 10px;
+    }
+    
+    .toggle-arrow {
+        font-size: 16px;
+    }
+    
+    .api-limit-panel {
+        width: 95%;
+        min-width: 260px;
+        top: 60px;
+        padding: 12px;
+    }
+}
