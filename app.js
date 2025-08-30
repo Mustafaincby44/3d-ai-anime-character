@@ -3067,7 +3067,7 @@ async function generateEdgeTTS(text, voice, speed) {
     console.log('🎵 Edge TTS başlatılıyor...', { text: text.substring(0, 50), voice, speed });
     
     try {
-        const response = await fetch('http://localhost:5000/tts', {
+        const response = await fetch('https://91df40e54b10.ngrok-free.app/speak', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -3075,7 +3075,7 @@ async function generateEdgeTTS(text, voice, speed) {
             body: JSON.stringify({
                 text: text,
                 voice: voice,
-                speed: speed
+                rate: `${speed > 1 ? '+' : ''}${((speed - 1) * 100).toFixed(0)}%`
             })
         });
         
