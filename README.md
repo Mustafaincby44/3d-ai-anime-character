@@ -13,40 +13,16 @@ Bu proje, 3D anime karakteri ile konuşabilen, Edge TTS ve Gemini AI destekli ge
 - **Brain System**: Gelişmiş beyin sistemi entegrasyonu
 - **API Takibi**: Kullanım limitleri ve tier yönetimi
 
-## 🚀 Kurulum
-
-### 1. Python Backend (Edge TTS)
-
-```bash
-# Gerekli paketleri yükle
-pip install -r requirements.txt
-
-# Edge TTS sunucusunu başlat
-python tts_server.py
-```
-
-Sunucu `http://localhost:5000` adresinde çalışacaktır.
-
-### 2. Web Uygulaması
-
-```bash
-# Projeyi bir web sunucusunda çalıştır
-# Örnek: Python HTTP sunucusu
-python -m http.server 8000
-
-# Veya Live Server (VS Code) kullan
-```
-
 ## 🎵 TTS Modelleri
 
 ### Edge TTS (Varsayılan)
-- **Ücretsiz ve sınırsız**
+- **Ücretsiz ve günlük 50(ücretsiz model 50)**
 - **10 dil desteği**: Türkçe, İngilizce, Japonca, Korece, Çince, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça
 - **Her dil için erkek/kadın ses seçenekleri**
 - **Ses hızı ayarlanabilir** (0.5x - 2.0x)
 
 ### Gemini TTS
-- **Günlük 500 istek limiti**
+- **Günlük 15 istek limiti(free-tier api 15)**
 - **Yüksek kaliteli AI ses**
 - **Çeşitli ses seçenekleri**
 
@@ -103,29 +79,9 @@ AiProject/
 └── README.md           # Bu dosya
 ```
 
-## 🐛 Sorun Giderme
-
-### Edge TTS Çalışmıyor
-1. Python backend'in çalıştığından emin ol
-2. `http://localhost:5000/health` adresini kontrol et
-3. Console'da hata mesajlarını kontrol et
-
-### Ses Çalmıyor
-1. Tarayıcı ses izinlerini kontrol et
-2. Ses seviyesini kontrol et
-3. Audio context'in başlatıldığından emin ol
-
-## 🤝 Katkıda Bulunma
-
-1. Fork yap
-2. Feature branch oluştur (`git checkout -b feature/AmazingFeature`)
-3. Commit yap (`git commit -m 'Add some AmazingFeature'`)
-4. Push yap (`git push origin feature/AmazingFeature`)
-5. Pull Request oluştur
-
 ## 📄 Lisans
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
+Bu proje " all rights reserved " lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosyasına bakın.
 
 ## 🙏 Teşekkürler
 
@@ -135,5 +91,3 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 - **VRM** - 3D model formatı
 
 ---
-
-**Not**: Bu proje eğitim amaçlıdır. Ticari kullanım için gerekli lisansları kontrol edin.
