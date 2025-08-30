@@ -10,7 +10,7 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-# Edge TTS sesleri
+# Edge TTS sesleri - Gelişmiş ses listesi
 VOICES = {
     "Turkish": {
         "Emel": "tr-TR-EmelNeural",
@@ -19,12 +19,40 @@ VOICES = {
     "English": {
         "Jenny": "en-US-JennyNeural",
         "Guy": "en-US-GuyNeural",
-        "Aria": "en-US-AriaNeural",
         "Ana": "en-US-AnaNeural",
+        "Aria": "en-US-AriaNeural",
         "Christopher": "en-US-ChristopherNeural",
         "Eric": "en-US-EricNeural",
         "Michelle": "en-US-MichelleNeural",
-        "Roger": "en-US-RogerNeural"
+        "Roger": "en-US-RogerNeural",
+        "Natasha": "en-AU-NatashaNeural",
+        "William": "en-AU-WilliamNeural",
+        "Clara": "en-CA-ClaraNeural",
+        "Liam": "en-CA-LiamNeural",
+        "Libby": "en-GB-LibbyNeural",
+        "Maisie": "en-GB-MaisieNeural",
+        "Ryan": "en-GB-RyanNeural",
+        "Sonia": "en-GB-SoniaNeural",
+        "Thomas": "en-GB-ThomasNeural",
+        "Sam": "en-HK-SamNeural",
+        "Yan": "en-HK-YanNeural",
+        "Connor": "en-IE-ConnorNeural",
+        "Emily": "en-IE-EmilyNeural",
+        "Neerja": "en-IN-NeerjaNeural",
+        "Prabhat": "en-IN-PrabhatNeural",
+        "Asilia": "en-KE-AsiliaNeural",
+        "Chilemba": "en-KE-ChilembaNeural",
+        "Abeo": "en-NG-AbeoNeural",
+        "Ezinne": "en-NG-EzinneNeural",
+        "Mitchell": "en-NZ-MitchellNeural",
+        "James": "en-PH-JamesNeural",
+        "Rosa": "en-PH-RosaNeural",
+        "Luna": "en-SG-LunaNeural",
+        "Wayne": "en-SG-WayneNeural",
+        "Elimu": "en-TZ-ElimuNeural",
+        "Imani": "en-TZ-ImaniNeural",
+        "Leah": "en-ZA-LeahNeural",
+        "Luke": "en-ZA-LukeNeural"
     },
     "Japanese": {
         "Nanami": "ja-JP-NanamiNeural",
@@ -34,25 +62,67 @@ VOICES = {
         "Sun-Hi": "ko-KR-SunHiNeural",
         "InJoon": "ko-KR-InJoonNeural"
     },
-    "Chinese": {
-        "Xiaoxiao": "zh-CN-XiaoxiaoNeural",
-        "Yunyang": "zh-CN-YunyangNeural",
-        "Yunxi": "zh-CN-YunxiNeural",
-        "Xiaoyi": "zh-CN-XiaoyiNeural"
-    },
     "German": {
         "Katja": "de-DE-KatjaNeural",
+        "Amala": "de-DE-AmalaNeural",
         "Conrad": "de-DE-ConradNeural",
-        "Amala": "de-DE-AmalaNeural"
+        "Killian": "de-DE-KillianNeural",
+        "Ingrid": "de-AT-IngridNeural",
+        "Jonas": "de-AT-JonasNeural",
+        "Jan": "de-CH-JanNeural",
+        "Leni": "de-CH-LeniNeural"
     },
     "French": {
         "Denise": "fr-FR-DeniseNeural",
+        "Eloise": "fr-FR-EloiseNeural",
         "Henri": "fr-FR-HenriNeural",
-        "Eloise": "fr-FR-EloiseNeural"
+        "Sylvie": "fr-CA-SylvieNeural",
+        "Antoine": "fr-CA-AntoineNeural",
+        "Jean": "fr-CA-JeanNeural",
+        "Ariane": "fr-CH-ArianeNeural",
+        "Fabrice": "fr-CH-FabriceNeural",
+        "Charline": "fr-BE-CharlineNeural",
+        "Gerard": "fr-BE-GerardNeural"
     },
     "Spanish": {
+        "Elena": "es-AR-ElenaNeural",
+        "Tomas": "es-AR-TomasNeural",
+        "Marcelo": "es-BO-MarceloNeural",
+        "Sofia": "es-BO-SofiaNeural",
+        "Gonzalo": "es-CO-GonzaloNeural",
+        "Salome": "es-CO-SalomeNeural",
+        "Juan": "es-CR-JuanNeural",
+        "Maria": "es-CR-MariaNeural",
+        "Belkys": "es-CU-BelkysNeural",
+        "Emilio": "es-DO-EmilioNeural",
+        "Ramona": "es-DO-RamonaNeural",
+        "Andrea": "es-EC-AndreaNeural",
+        "Luis": "es-EC-LuisNeural",
+        "Alvaro": "es-ES-AlvaroNeural",
         "Elvira": "es-ES-ElviraNeural",
-        "Alvaro": "es-ES-AlvaroNeural"
+        "Teresa": "es-GQ-TeresaNeural",
+        "Andres": "es-GT-AndresNeural",
+        "Marta": "es-GT-MartaNeural",
+        "Carlos": "es-HN-CarlosNeural",
+        "Karla": "es-HN-KarlaNeural",
+        "Federico": "es-NI-FedericoNeural",
+        "Yolanda": "es-NI-YolandaNeural",
+        "Margarita": "es-PA-MargaritaNeural",
+        "Roberto": "es-PA-RobertoNeural",
+        "Alex": "es-PE-AlexNeural",
+        "Camila": "es-PE-CamilaNeural",
+        "Karina": "es-PR-KarinaNeural",
+        "Victor": "es-PR-VictorNeural",
+        "Mario": "es-PY-MarioNeural",
+        "Tania": "es-PY-TaniaNeural",
+        "Lorena": "es-SV-LorenaNeural",
+        "Rodrigo": "es-SV-RodrigoNeural",
+        "Alonso": "es-US-AlonsoNeural",
+        "Paloma": "es-US-PalomaNeural",
+        "Mateo": "es-UY-MateoNeural",
+        "Valentina": "es-UY-ValentinaNeural",
+        "Paola": "es-VE-PaolaNeural",
+        "Sebastian": "es-VE-SebastianNeural"
     },
     "Italian": {
         "Isabella": "it-IT-IsabellaNeural",
