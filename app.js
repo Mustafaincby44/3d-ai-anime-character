@@ -12,7 +12,7 @@ let particles;
 const statusText = document.getElementById('status-text');
 const thinkingIndicator = document.getElementById('thinking-indicator');
 const userInput = document.getElementById('userInput');
-const sendButton = document.getElementById('sendButton');\",\n \"status\": \"RESOURCE_EXHAUSTED\",\n \"details\": [\n {\n \"@type\": \"type.googleapis.com/google.rpc.QuotaFailure\",\n \"violations\": [\n {\n \"quotaMetric\":
+const sendButton = document.getElementById('sendButton');
 const container = document.getElementById('canvas-container');
 
 // Application State
@@ -775,12 +775,14 @@ async function getAIResponse(prompt) {
     return JSON.parse(text.replaceAll("```json", "").replaceAll("```", "").trim());
 }
 
-async function speakText(text) {
+function speakText(text) {
     if (!text || text.trim().length < 2) return;
-    
+
     setAppState('speaking');
     isSpeaking = true;
-    
+
+    console.log(`🎵 speakText çağrıldı. currentTTSModel: ${currentTTSModel}`);
+
     try {
         // TTS modeline göre ses üret
         if (currentTTSModel === 'edge-tts') {
@@ -2255,7 +2257,7 @@ function loadCurrentSettings() {
             characterTheme.value = localStorage.getItem('characterTheme') || 'default';
         }
 
-        // UI Theme
+         // UI Theme
         const mainUIThemeSelect = document.getElementById('main-ui-theme');
         if (mainUIThemeSelect) {
             mainUIThemeSelect.value = localStorage.getItem('main-ui-theme') || 'modern';
@@ -2381,126 +2383,152 @@ function updateVolumeDisplay() {
 function saveAllSettings() {
     try {
         console.log('💾 Tüm ayarlar kaydediliyor...');
-        
+
+        // UI theme
+        const mainUITheme = document.getElementById('main-ui-theme');
+        if (mainUITheme) {
+            localStorage.setItem('main-ui-theme', mainUITheme.value);
+            console.log(`✅ UI teması kaydedildi: ${mainUITheme.value}`);
+        }
+
         // Ses ayarları
         const volumeSlider = document.getElementById('volume-slider');
         if (volumeSlider) {
             localStorage.setItem('volume', volumeSlider.value);
+            console.log(`✅ Ses seviyesi kaydedildi: ${volumeSlider.value}`);
         }
-        
+
         // Otomatik konuşma
         const autoTalkToggle = document.getElementById('auto-talk-toggle');
         if (autoTalkToggle) {
             localStorage.setItem('autoTalk', autoTalkToggle.checked);
+            console.log(`✅ Otomatik konuşma kaydedildi: ${autoTalkToggle.checked}`);
         }
-        
+
         // Varsayılan dil
         const defaultLanguage = document.getElementById('default-language');
         if (defaultLanguage) {
             localStorage.setItem('defaultLanguage', defaultLanguage.value);
+             console.log(`✅ Varsayılan dil kaydedildi: ${defaultLanguage.value}`);
         }
-        
+
         // Response API Key
         const responseApiKeyInput = document.getElementById('response-api-key-input');
         if (responseApiKeyInput) {
             localStorage.setItem('responseApiKey', responseApiKeyInput.value);
+            console.log(`✅ Response API Key kaydedildi: ${responseApiKeyInput.value}`);
         }
-        
+
         // Response Model
         const responseModel = document.getElementById('response-model');
         if (responseModel) {
             localStorage.setItem('responseModel', responseModel.value);
+            console.log(`✅ Response Model kaydedildi: ${responseModel.value}`);
         }
-        
+
         // Karakter kişiliği
         const characterPersonality = document.getElementById('character-personality');
         if (characterPersonality) {
             localStorage.setItem('characterPersonality', characterPersonality.value);
+            console.log(`✅ Karakter kişiliği kaydedildi: ${characterPersonality.value}`);
         }
-        
+
         // Özel kişilik
         const customPersonalityText = document.getElementById('custom-personality-text');
         if (customPersonalityText) {
             localStorage.setItem('customPersonality', customPersonalityText.value);
+            console.log(`✅ Özel kişilik kaydedildi: ${customPersonalityText.value}`);
         }
-        
+
         // TTS API Key
         const ttsApiKeyInput = document.getElementById('tts-api-key-input');
         if (ttsApiKeyInput) {
             localStorage.setItem('ttsApiKey', ttsApiKeyInput.value);
+            console.log(`✅ TTS API Key kaydedildi: ${ttsApiKeyInput.value}`);
         }
-        
+
         // TTS Servisi
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
             localStorage.setItem('ttsService', ttsService.value);
+            console.log(`✅ TTS Servisi kaydedildi: ${ttsService.value}`);
         }
-        
+
         // Edge TTS ayarları
         const edgeLanguage = document.getElementById('edge-language');
         if (edgeLanguage) {
             localStorage.setItem('edgeLanguage', edgeLanguage.value);
+            console.log(`✅ Edge Dili kaydedildi: ${edgeLanguage.value}`);
         }
-        
+
         const edgeVoice = document.getElementById('edge-voice');
         if (edgeVoice) {
             localStorage.setItem('edgeVoice', edgeVoice.value);
+            console.log(`✅ Edge Sesi kaydedildi: ${edgeVoice.value}`);
         }
-        
+
         const edgeSpeed = document.getElementById('edge-speed');
         if (edgeSpeed) {
             localStorage.setItem('edgeSpeed', edgeSpeed.value);
+            console.log(`✅ Edge Hızı kaydedildi: ${edgeSpeed.value}`);
         }
-        
+
         // Gemini TTS ayarları
         const geminiTtsModel = document.getElementById('gemini-tts-model');
         if (geminiTtsModel) {
             localStorage.setItem('geminiTtsModel', geminiTtsModel.value);
+            console.log(`✅ Gemini TTS Model kaydedildi: ${geminiTtsModel.value}`);
         }
-        
+
         const geminiVoice = document.getElementById('gemini-voice');
         if (geminiVoice) {
             localStorage.setItem('geminiVoice', geminiVoice.value);
+            console.log(`✅ Gemini Sesi kaydedildi: ${geminiVoice.value}`);
         }
-        
+
         // Karakter ayarları
         const characterTheme = document.getElementById('character-theme');
         if (characterTheme) {
             localStorage.setItem('characterTheme', characterTheme.value);
+            console.log(`✅ Karakter Teması kaydedildi: ${characterTheme.value}`);
         }
-        
+
         const defaultEmotion = document.getElementById('default-emotion');
         if (defaultEmotion) {
             localStorage.setItem('defaultEmotion', defaultEmotion.value);
+            console.log(`✅ Default Emotion kaydedildi: ${defaultEmotion.value}`);
         }
-        
+
         const animationSpeed = document.getElementById('animation-speed');
         if (animationSpeed) {
             localStorage.setItem('animationSpeed', animationSpeed.value);
+             console.log(`✅ Animasyon hızı kaydedildi: ${animationSpeed.value}`);
         }
-        
+
         // Gelişmiş ayarlar
         const debugMode = document.getElementById('debug-mode');
         if (debugMode) {
             localStorage.setItem('debugMode', debugMode.checked);
+            console.log(`✅ Debug Modu kaydedildi: ${debugMode.checked}`);
         }
-        
+
         const autoBackup = document.getElementById('auto-backup');
         if (autoBackup) {
             localStorage.setItem('autoBackup', autoBackup.checked);
+             console.log(`✅ Auto Backup kaydedildi: ${autoBackup.checked}`);
         }
-        
+
         // Başarı mesajı
         showNotification('✅ Tüm ayarlar başarıyla kaydedildi!', 'success');
-        
+
         // Değişiklikleri sıfırla
         resetUnsavedChanges();
-        
+
         // Ayarları uygula
         applySettings();
-        
+
         console.log('✅ Tüm ayarlar başarıyla kaydedildi');
-        
+
     } catch (error) {
         console.error('❌ Ayarlar kaydedilirken hata:', error);
         showNotification('❌ Ayarlar kaydedilirken hata oluştu!', 'error');
