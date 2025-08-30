@@ -12,7 +12,7 @@ let particles;
 const statusText = document.getElementById('status-text');
 const thinkingIndicator = document.getElementById('thinking-indicator');
 const userInput = document.getElementById('userInput');
-const sendButton = document.getElementById('sendButton');
+const sendButton = document.getElementById('sendButton');\",\n \"status\": \"RESOURCE_EXHAUSTED\",\n \"details\": [\n {\n \"@type\": \"type.googleapis.com/google.rpc.QuotaFailure\",\n \"violations\": [\n {\n \"quotaMetric\":
 const container = document.getElementById('canvas-container');
 
 // Application State
@@ -2167,7 +2167,7 @@ function resetUnsavedChanges() {
 // Mevcut ayarları yükle
 function loadCurrentSettings() {
     console.log('🔧 Mevcut ayarlar yükleniyor...');
-    
+
     try {
         // Ses seviyesi
         const volumeSlider = document.getElementById('volume-slider');
@@ -2175,110 +2175,117 @@ function loadCurrentSettings() {
             volumeSlider.value = localStorage.getItem('volume') || 70;
             updateVolumeDisplay();
         }
-        
+
         // Otomatik konuşma
         const autoTalkToggle = document.getElementById('auto-talk-toggle');
         if (autoTalkToggle) {
             autoTalkToggle.checked = localStorage.getItem('autoTalk') === 'true';
         }
-        
+
         // Varsayılan dil
         const defaultLanguage = document.getElementById('default-language');
         if (defaultLanguage) {
             defaultLanguage.value = localStorage.getItem('defaultLanguage') || 'tr';
         }
-        
+
         // Response API Key
         const responseApiKeyInput = document.getElementById('response-api-key-input');
         if (responseApiKeyInput) {
             responseApiKeyInput.value = localStorage.getItem('responseApiKey') || '';
         }
-        
+
         // Response Model
         const responseModel = document.getElementById('response-model');
         if (responseModel) {
             responseModel.value = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
         }
-        
+
         // Karakter kişiliği
         const characterPersonality = document.getElementById('character-personality');
         if (characterPersonality) {
             characterPersonality.value = localStorage.getItem('characterPersonality') || 'cute';
             updatePersonalityFields();
         }
-        
+
         // TTS API Key
         const ttsApiKeyInput = document.getElementById('tts-api-key-input');
         if (ttsApiKeyInput) {
             ttsApiKeyInput.value = localStorage.getItem('ttsApiKey') || '';
         }
-        
+
         // TTS Servisi
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
             ttsService.value = localStorage.getItem('ttsService') || 'edge-tts';
             updateTTSServiceSettings();
         }
-        
+
         // Edge TTS ayarları
         const edgeLanguage = document.getElementById('edge-language');
         if (edgeLanguage) {
             edgeLanguage.value = localStorage.getItem('edgeLanguage') || 'tr';
             updateEdgeVoiceOptions();
         }
-        
+
         const edgeVoice = document.getElementById('edge-voice');
         if (edgeVoice) {
             edgeVoice.value = localStorage.getItem('edgeVoice') || 'tr-TR-EmelNeural';
         }
-        
+
         const edgeSpeed = document.getElementById('edge-speed');
         if (edgeSpeed) {
             edgeSpeed.value = localStorage.getItem('edgeSpeed') || 1.0;
             updateEdgeSpeedDisplay();
         }
-        
+
         // Gemini TTS ayarları
         const geminiTtsModel = document.getElementById('gemini-tts-model');
         if (geminiTtsModel) {
             geminiTtsModel.value = localStorage.getItem('geminiTtsModel') || 'gemini-2.5-flash-preview-tts';
         }
-        
+
         const geminiVoice = document.getElementById('gemini-voice');
         if (geminiVoice) {
             geminiVoice.value = localStorage.getItem('geminiVoice') || 'alnilam';
         }
-        
+
         // Karakter ayarları
         const characterTheme = document.getElementById('character-theme');
         if (characterTheme) {
             characterTheme.value = localStorage.getItem('characterTheme') || 'default';
         }
-        
+
+        // UI Theme
+        const mainUIThemeSelect = document.getElementById('main-ui-theme');
+        if (mainUIThemeSelect) {
+            mainUIThemeSelect.value = localStorage.getItem('main-ui-theme') || 'modern';
+        }
+
+        // Default Emotion
         const defaultEmotion = document.getElementById('default-emotion');
         if (defaultEmotion) {
             defaultEmotion.value = localStorage.getItem('defaultEmotion') || 'happy';
         }
-        
+
         const animationSpeed = document.getElementById('animation-speed');
         if (animationSpeed) {
             animationSpeed.value = localStorage.getItem('animationSpeed') || 1.0;
             updateAnimationSpeedDisplay();
         }
-        
+
         // Gelişmiş ayarlar
         const debugMode = document.getElementById('debug-mode');
         if (debugMode) {
             debugMode.checked = localStorage.getItem('debugMode') === 'true';
         }
-        
+
         const autoBackup = document.getElementById('auto-backup');
         if (autoBackup) {
             autoBackup.checked = localStorage.getItem('autoBackup') === 'true';
         }
-        
+
         console.log('✅ Ayarlar başarıyla yüklendi');
-        
+
     } catch (error) {
         console.error('❌ Ayarlar yüklenirken hata:', error);
     }
@@ -2508,27 +2515,31 @@ function applySettings() {
         // Ses seviyesini güncelle
         console.log(`🔊 Ses seviyesi güncellendi: ${volume}%`);
     }
-    
+
+    // UI theme
+    const mainUITheme = localStorage.getItem('main-ui-theme') || 'modern';
+    applyUITheme(mainUITheme);
+
     // Otomatik konuşma
     const autoTalk = localStorage.getItem('autoTalk') === 'true';
     console.log(`💬 Otomatik konuşma: ${autoTalk ? 'Aktif' : 'Pasif'}`);
-    
+
     // Varsayılan dil
     const defaultLanguage = localStorage.getItem('defaultLanguage') || 'tr';
     console.log(`🌍 Varsayılan dil: ${defaultLanguage}`);
-    
+
     // Response model
     const responseModel = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
     console.log(`🧠 Response model: ${responseModel}`);
-    
+
     // TTS servisi
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
     console.log(`🎤 TTS servisi: ${ttsService}`);
-    
+
     // Karakter teması
     const characterTheme = localStorage.getItem('characterTheme') || 'default';
     applyCharacterTheme(characterTheme);
-    
+
     // Debug modu
     const debugMode = localStorage.getItem('debugMode') === 'true';
     console.log(`📊 Debug modu: ${debugMode ? 'Aktif' : 'Pasif'}`);
@@ -2693,7 +2704,7 @@ function showNotification(message, type = 'success') {
 // UI tema uygulama fonksiyonu
 function applyUITheme(theme) {
     const root = document.documentElement;
-    
+
     switch(theme) {
         case 'glassmorphism':
             root.style.setProperty('--bg-overlay', 'rgba(255, 255, 255, 0.1)');
@@ -2712,6 +2723,12 @@ function applyUITheme(theme) {
             break;
         default:
             // Modern tema (varsayılan)
+            root.style.setProperty('--bg-overlay', 'rgba(255, 255, 255, 0.05)');
+            root.style.setProperty('--backdrop-blur', 'blur(10px)');
+            root.style.setProperty('--border-radius', '12px');
+            root.style.setProperty('--shadow-style', '0 4px 6px rgba(0,0,0,0.1)');
+            root.style.setProperty('--primary-color', '#1e1e2e');
+            root.style.setProperty('--secondary-color', '#2d2d44');
             break;
     }
 }
