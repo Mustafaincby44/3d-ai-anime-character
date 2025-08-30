@@ -2372,12 +2372,6 @@ function loadCurrentSettings() {
             updateEdgeVoiceOptions();
         }
 
-        const edgeVoice = document.getElementById('edge-voice');
-        if (edgeVoice) {
-            edgeVoice.value = localStorage.getItem('edgeVoice') || 'tr-TR-EmelNeural';
-            console.log('🎭 Edge sesi yüklendi:', edgeVoice.value);
-        }
-
         const edgeSpeed = document.getElementById('edge-speed');
         if (edgeSpeed) {
             edgeSpeed.value = localStorage.getItem('edgeSpeed') || 1.0;
@@ -2489,14 +2483,21 @@ function updateEdgeVoiceOptions() {
         console.log(`✅ Ses eklendi: ${name} - ${voiceId}`);
     });
     
-    // Varsayılan sesi seç
-    if (voiceSelect.options.length > 0) {
-        voiceSelect.value = voiceSelect.options[0].value;
-        console.log(`🎯 Varsayılan ses seçildi: ${voiceSelect.value}`);
-        
-        // LocalStorage'a kaydet
-        localStorage.setItem('edgeVoice', voiceSelect.value);
+    // LocalStorage'dan kaydedilmiş sesi yükle
+    const savedVoice = localStorage.getItem('edgeVoice');
+    let selectedVoice = voiceSelect.options[0]?.value || 'tr-TR-EmelNeural';
+    
+    // Eğer kaydedilmiş ses bu dilde mevcutsa, onu seç
+    if (savedVoice && voices[Object.keys(voices).find(key => voices[key] === savedVoice)]) {
+        selectedVoice = savedVoice;
+        console.log(`💾 Kaydedilmiş ses bulundu: ${selectedVoice}`);
+    } else {
+        // Yoksa ilk sesi seç ve localStorage'a kaydet
+        console.log(`🎯 Varsayılan ses seçildi: ${selectedVoice}`);
+        localStorage.setItem('edgeVoice', selectedVoice);
     }
+    
+    voiceSelect.value = selectedVoice;
     
     // Ses seçimi değiştiğinde localStorage'a kaydet
     voiceSelect.addEventListener('change', function() {
