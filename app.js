@@ -825,16 +825,17 @@ async function handleUserInput() {
         return;
     }
     
-    // Check if API keys are provided
+    // Check if response API key is provided
     if (!apiUsage.responseApiKey) {
         updateStatus('⚠️ Response API key gerekli! Lütfen ayarlardan API key girin.');
         console.log('❌ No response API key provided');
         return;
     }
     
-    if (!apiUsage.ttsApiKey) {
-        updateStatus('⚠️ TTS API key gerekli! Lütfen ayarlardan TTS API key girin.');
-        console.log('❌ No TTS API key provided');
+    // TTS API key kontrolü - sadece Gemini TTS için gerekli
+    if (currentTTSModel === 'gemini-tts' && !apiUsage.ttsApiKey) {
+        updateStatus('⚠️ Gemini TTS için API key gerekli! Lütfen ayarlardan TTS API key girin.');
+        console.log('❌ No TTS API key provided for Gemini TTS');
         return;
     }
     
@@ -987,6 +988,12 @@ async function speakText(text) {
 
 async function generateTTS(text) {
     console.log('🎵 Starting Gemini TTS generation with:', currentTTSModel);
+    
+    // Check if TTS API key is available for Gemini TTS
+    if (!apiUsage.ttsApiKey) {
+        console.error('❌ No TTS API key available for Gemini TTS');
+        throw new Error('TTS API key required for Gemini TTS');
+    }
     
     // Track TTS API usage
     trackAPIUsage('tts');
@@ -2349,11 +2356,12 @@ function loadCurrentSettings() {
             updatePersonalityFields();
         }
 
-        // TTS API Key
+        // TTS API Key - Sadece Gemini TTS için gerekli
         const ttsApiKeyInput = document.getElementById('tts-api-key-input');
         if (ttsApiKeyInput) {
             ttsApiKeyInput.value = localStorage.getItem('ttsApiKey') || '';
             apiUsage.ttsApiKey = ttsApiKeyInput.value; // Global değişkeni güncelle
+            console.log('🔑 TTS API Key yüklendi:', ttsApiKeyInput.value ? 'Mevcut' : 'Yok');
         }
 
         // TTS Servisi
@@ -2361,6 +2369,7 @@ function loadCurrentSettings() {
         if (ttsService) {
             ttsService.value = localStorage.getItem('ttsService') || 'edge-tts';
             currentTTSModel = ttsService.value; // Global değişkeni güncelle
+            console.log('🎤 TTS servisi yüklendi:', ttsService.value);
             updateTTSServiceSettings();
         }
 
@@ -2445,13 +2454,22 @@ function updateTTSServiceSettings() {
     const ttsService = document.getElementById('tts-service')?.value || 'edge-tts';
     const edgeSettings = document.getElementById('edge-tts-settings');
     const geminiSettings = document.getElementById('gemini-tts-settings');
+    const geminiApiGroup = document.getElementById('gemini-tts-api-group');
+    
+    console.log('🎭 TTS servisi değişti:', ttsService);
     
     if (ttsService === 'edge-tts') {
+        // Edge TTS seçildi - API key gerekmez
         if (edgeSettings) edgeSettings.style.display = 'block';
         if (geminiSettings) geminiSettings.style.display = 'none';
+        if (geminiApiGroup) geminiApiGroup.style.display = 'none';
+        console.log('✅ Edge TTS seçildi - API key gerekmez');
     } else {
+        // Gemini TTS seçildi - API key gerekir
         if (edgeSettings) edgeSettings.style.display = 'none';
         if (geminiSettings) geminiSettings.style.display = 'block';
+        if (geminiApiGroup) geminiApiGroup.style.display = 'block';
+        console.log('🔑 Gemini TTS seçildi - API key gerekir');
     }
 }
 
@@ -2695,18 +2713,23 @@ function saveAllSettings() {
             console.log(`✅ Özel kişilik kaydedildi: ${customPersonalityText.value}`);
         }
 
-        // TTS API Key
+        // TTS API Key - Sadece Gemini TTS için gerekli
         const ttsApiKeyInput = document.getElementById('tts-api-key-input');
         if (ttsApiKeyInput) {
             localStorage.setItem('ttsApiKey', ttsApiKeyInput.value);
-            console.log(`✅ TTS API Key kaydedildi: ${ttsApiKeyInput.value}`);
+            apiUsage.ttsApiKey = ttsApiKeyInput.value; // Global değişkeni güncelle
+            console.log(`✅ TTS API Key kaydedildi: ${ttsApiKeyInput.value ? 'Mevcut' : 'Yok'}`);
         }
 
         // TTS Servisi
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
             localStorage.setItem('ttsService', ttsService.value);
+            currentTTSModel = ttsService.value; // Global değişkeni güncelle
             console.log(`✅ TTS Servisi kaydedildi: ${ttsService.value}`);
+            
+            // TTS servis ayarlarını güncelle
+            updateTTSServiceSettings();
         }
 
         // Edge TTS ayarları
@@ -2835,6 +2858,9 @@ function applySettings() {
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
     currentTTSModel = ttsService; // Global değişkeni güncelle
     console.log(`🎤 TTS servisi: ${ttsService}`);
+    
+    // TTS servis ayarlarını güncelle
+    updateTTSServiceSettings();
 
     // Karakter teması
     const characterTheme = localStorage.getItem('characterTheme') || 'default';
