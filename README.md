@@ -73,10 +73,18 @@ AiProject/
 ├── brain.js            # Beyin sistemi
 ├── index.html          # HTML arayüzü
 ├── styles.css          # CSS stilleri
-├── tts_server.py       # Edge TTS Python backend
+├── tts_server.py       # Edge TTS Python backend (ngrok ile erişim)
 ├── requirements.txt    # Python paketleri
 └── README.md           # Bu dosya
 ```
+
+## 🌐 Edge TTS Server
+
+Edge TTS server'ı ngrok ile dış dünyaya açılmıştır:
+- **URL**: `https://91df40e54b10.ngrok-free.app`
+- **Endpoint**: `/speak`
+- **Method**: `POST`
+- **Port**: 5000 (local)
 
 ## 📄 Lisans
 
