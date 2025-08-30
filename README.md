@@ -17,7 +17,7 @@ Bu proje, 3D anime karakteri ile konuşabilen, Edge TTS ve Gemini AI destekli ge
 
 ### Edge TTS (Varsayılan)
 - **Ücretsiz ve günlük 50(ücretsiz model 50)**
-- **10 dil desteği**: Türkçe, İngilizce, Japonca, Korece, Çince, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça
+- **9 dil desteği**: Türkçe, İngilizce, Japonca, Korece, Almanca, Fransızca, İspanyolca, İtalyanca, Rusça
 - **Her dil için erkek/kadın ses seçenekleri**
 - **Ses hızı ayarlanabilir** (0.5x - 2.0x)
 
@@ -31,14 +31,13 @@ Bu proje, 3D anime karakteri ile konuşabilen, Edge TTS ve Gemini AI destekli ge
 | Dil | Kod | Sesler |
 |-----|-----|--------|
 | Türkçe | `tr` | Emel (K), Ahmet (E) |
-| İngilizce | `en` | Jenny (K), Guy (E), Aria (K) |
+| İngilizce | `en` | Jenny (K), Guy (E), Ana (K), Aria (K), Christopher (E), Eric (E), Michelle (K), Roger (E), Natasha (K), William (E), Clara (K), Liam (E), Libby (K), Maisie (K), Ryan (E), Sonia (K), Thomas (E), Sam (K), Yan (E), Connor (E), Emily (K), Neerja (K), Prabhat (E), Asilia (K), Chilemba (E), Abeo (E), Ezinne (K), Mitchell (E), James (E), Rosa (K), Luna (K), Wayne (E), Elimu (E), Imani (K), Leah (K), Luke (E) |
 | Japonca | `ja` | Nanami (K), Keita (E) |
 | Korece | `ko` | Sun-Hi (K), InJoon (E) |
-| Çince | `zh` | Xiaoxiao (K), Yunyang (E) |
-| Almanca | `de` | Katja (K), Conrad (E) |
-| Fransızca | `fr` | Denise (K), Henri (E) |
-| İspanyolca | `es` | Elvira (K), Alvaro (E) |
-| İtalyanca | `it` | Isabella (K), Diego (E) |
+| Almanca | `de` | Katja (K), Amala (K), Conrad (E), Killian (E), Ingrid (K), Jonas (E), Jan (E), Leni (K) |
+| Fransızca | `fr` | Denise (K), Eloise (K), Henri (E), Sylvie (K), Antoine (E), Jean (E), Ariane (K), Fabrice (E), Charline (K), Gerard (E) |
+| İspanyolca | `es` | Elena (K), Tomas (E), Marcelo (E), Sofia (K), Gonzalo (E), Salome (K), Juan (E), Maria (K), Belkys (K), Emilio (E), Ramona (K), Andrea (K), Luis (E), Alvaro (E), Elvira (K), Teresa (K), Andres (E), Marta (K), Carlos (E), Karla (K), Federico (E), Yolanda (K), Margarita (K), Roberto (E), Alex (E), Camila (K), Karina (K), Victor (E), Mario (E), Tania (K), Lorena (K), Rodrigo (E), Alonso (E), Paloma (K), Mateo (E), Valentina (K), Paola (K), Sebastian (E) |
+| İtalyanca | `it` | Isabella (K), Diego (E), Elsa (K) |
 | Rusça | `ru` | Svetlana (K), Dmitry (E) |
 
 ## ⚙️ Ayarlar
