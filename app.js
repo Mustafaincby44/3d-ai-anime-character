@@ -2947,7 +2947,7 @@ function toggleLimitPanel() {
         panel.classList.remove('hidden');
         panel.classList.add('show');
         arrow.classList.add('rotated');
-        isLimitPanelOpen = false;
+        isLimitPanelOpen = true;
         
         // Panel'i otomatik kapat (5 saniye sonra)
         setTimeout(() => {
