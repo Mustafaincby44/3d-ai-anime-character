@@ -83,6 +83,131 @@ let apiUsage = {
 // Global erişim için window objesine ekle
 window.apiUsage = apiUsage;
 
+// Edge TTS sesleri - Gelişmiş ses listesi
+const EDGE_TTS_VOICES = {
+    "tr": {
+        "Emel": "tr-TR-EmelNeural",
+        "Ahmet": "tr-TR-AhmetNeural"
+    },
+    "en": {
+        "Jenny": "en-US-JennyNeural",
+        "Guy": "en-US-GuyNeural",
+        "Ana": "en-US-AnaNeural",
+        "Aria": "en-US-AriaNeural",
+        "Christopher": "en-US-ChristopherNeural",
+        "Eric": "en-US-EricNeural",
+        "Michelle": "en-US-MichelleNeural",
+        "Roger": "en-US-RogerNeural",
+        "Natasha": "en-AU-NatashaNeural",
+        "William": "en-AU-WilliamNeural",
+        "Clara": "en-CA-ClaraNeural",
+        "Liam": "en-CA-LiamNeural",
+        "Libby": "en-GB-LibbyNeural",
+        "Maisie": "en-GB-MaisieNeural",
+        "Ryan": "en-GB-RyanNeural",
+        "Sonia": "en-GB-SoniaNeural",
+        "Thomas": "en-GB-ThomasNeural",
+        "Sam": "en-HK-SamNeural",
+        "Yan": "en-HK-YanNeural",
+        "Connor": "en-IE-ConnorNeural",
+        "Emily": "en-IE-EmilyNeural",
+        "Neerja": "en-IN-NeerjaNeural",
+        "Prabhat": "en-IN-PrabhatNeural",
+        "Asilia": "en-KE-AsiliaNeural",
+        "Chilemba": "en-KE-ChilembaNeural",
+        "Abeo": "en-NG-AbeoNeural",
+        "Ezinne": "en-NG-EzinneNeural",
+        "Mitchell": "en-NZ-MitchellNeural",
+        "James": "en-PH-JamesNeural",
+        "Rosa": "en-PH-RosaNeural",
+        "Luna": "en-SG-LunaNeural",
+        "Wayne": "en-SG-WayneNeural",
+        "Elimu": "en-TZ-ElimuNeural",
+        "Imani": "en-TZ-ImaniNeural",
+        "Leah": "en-ZA-LeahNeural",
+        "Luke": "en-ZA-LukeNeural"
+    },
+    "ja": {
+        "Nanami": "ja-JP-NanamiNeural",
+        "Keita": "ja-JP-KeitaNeural"
+    },
+    "ko": {
+        "Sun-Hi": "ko-KR-SunHiNeural",
+        "InJoon": "ko-KR-InJoonNeural"
+    },
+    "de": {
+        "Katja": "de-DE-KatjaNeural",
+        "Amala": "de-DE-AmalaNeural",
+        "Conrad": "de-DE-ConradNeural",
+        "Killian": "de-DE-KillianNeural",
+        "Ingrid": "de-AT-IngridNeural",
+        "Jonas": "de-AT-JonasNeural",
+        "Jan": "de-CH-JanNeural",
+        "Leni": "de-CH-LeniNeural"
+    },
+    "fr": {
+        "Denise": "fr-FR-DeniseNeural",
+        "Eloise": "fr-FR-EloiseNeural",
+        "Henri": "fr-FR-HenriNeural",
+        "Sylvie": "fr-CA-SylvieNeural",
+        "Antoine": "fr-CA-AntoineNeural",
+        "Jean": "fr-CA-JeanNeural",
+        "Ariane": "fr-CH-ArianeNeural",
+        "Fabrice": "fr-CH-FabriceNeural",
+        "Charline": "fr-BE-CharlineNeural",
+        "Gerard": "fr-BE-GerardNeural"
+    },
+    "es": {
+        "Elena": "es-AR-ElenaNeural",
+        "Tomas": "es-AR-TomasNeural",
+        "Marcelo": "es-BO-MarceloNeural",
+        "Sofia": "es-BO-SofiaNeural",
+        "Gonzalo": "es-CO-GonzaloNeural",
+        "Salome": "es-CO-SalomeNeural",
+        "Juan": "es-CR-JuanNeural",
+        "Maria": "es-CR-MariaNeural",
+        "Belkys": "es-CU-BelkysNeural",
+        "Emilio": "es-DO-EmilioNeural",
+        "Ramona": "es-DO-RamonaNeural",
+        "Andrea": "es-EC-AndreaNeural",
+        "Luis": "es-EC-LuisNeural",
+        "Alvaro": "es-ES-AlvaroNeural",
+        "Elvira": "es-ES-ElviraNeural",
+        "Teresa": "es-GQ-TeresaNeural",
+        "Andres": "es-GT-AndresNeural",
+        "Marta": "es-GT-MartaNeural",
+        "Carlos": "es-HN-CarlosNeural",
+        "Karla": "es-HN-KarlaNeural",
+        "Federico": "es-NI-FedericoNeural",
+        "Yolanda": "es-NI-YolandaNeural",
+        "Margarita": "es-PA-MargaritaNeural",
+        "Roberto": "es-PA-RobertoNeural",
+        "Alex": "es-PE-AlexNeural",
+        "Camila": "es-PE-CamilaNeural",
+        "Karina": "es-PR-KarinaNeural",
+        "Victor": "es-PR-VictorNeural",
+        "Mario": "es-PY-MarioNeural",
+        "Tania": "es-PY-TaniaNeural",
+        "Lorena": "es-SV-LorenaNeural",
+        "Rodrigo": "es-SV-RodrigoNeural",
+        "Alonso": "es-US-AlonsoNeural",
+        "Paloma": "es-US-PalomaNeural",
+        "Mateo": "es-UY-MateoNeural",
+        "Valentina": "es-UY-ValentinaNeural",
+        "Paola": "es-VE-PaolaNeural",
+        "Sebastian": "es-VE-SebastianNeural"
+    },
+    "it": {
+        "Isabella": "it-IT-IsabellaNeural",
+        "Diego": "it-IT-DiegoNeural",
+        "Elsa": "it-IT-ElsaNeural"
+    },
+    "ru": {
+        "Svetlana": "ru-RU-SvetlanaNeural",
+        "Dmitry": "ru-RU-DmitryNeural"
+    }
+};
+
 // Load saved usage immediately
 function loadSavedUsage() {
     const saved = localStorage.getItem('apiUsage');
@@ -2243,12 +2368,14 @@ function loadCurrentSettings() {
         const edgeLanguage = document.getElementById('edge-language');
         if (edgeLanguage) {
             edgeLanguage.value = localStorage.getItem('edgeLanguage') || 'tr';
+            console.log('🌍 Edge dili yüklendi:', edgeLanguage.value);
             updateEdgeVoiceOptions();
         }
 
         const edgeVoice = document.getElementById('edge-voice');
         if (edgeVoice) {
             edgeVoice.value = localStorage.getItem('edgeVoice') || 'tr-TR-EmelNeural';
+            console.log('🎭 Edge sesi yüklendi:', edgeVoice.value);
         }
 
         const edgeSpeed = document.getElementById('edge-speed');
@@ -2336,7 +2463,10 @@ function updateEdgeVoiceOptions() {
     if (!languageSelect || !voiceSelect) return;
     
     const selectedLanguage = languageSelect.value;
+    console.log('🌍 Dil değişti:', selectedLanguage);
+    
     const voices = EDGE_TTS_VOICES[selectedLanguage] || {};
+    console.log('🎭 Mevcut sesler:', voices);
     
     // Mevcut seçenekleri temizle
     voiceSelect.innerHTML = '';
@@ -2347,12 +2477,23 @@ function updateEdgeVoiceOptions() {
         option.value = voiceId;
         option.textContent = `${name} (${voiceId})`;
         voiceSelect.appendChild(option);
+        console.log(`✅ Ses eklendi: ${name} - ${voiceId}`);
     });
     
     // Varsayılan sesi seç
     if (voiceSelect.options.length > 0) {
         voiceSelect.value = voiceSelect.options[0].value;
+        console.log(`🎯 Varsayılan ses seçildi: ${voiceSelect.value}`);
+        
+        // LocalStorage'a kaydet
+        localStorage.setItem('edgeVoice', voiceSelect.value);
     }
+    
+    // Ses seçimi değiştiğinde localStorage'a kaydet
+    voiceSelect.addEventListener('change', function() {
+        localStorage.setItem('edgeVoice', this.value);
+        console.log(`💾 Ses kaydedildi: ${this.value}`);
+    });
 }
 
 // Kişilik alanlarını güncelle
@@ -2573,6 +2714,9 @@ function saveAllSettings() {
         if (edgeLanguage) {
             localStorage.setItem('edgeLanguage', edgeLanguage.value);
             console.log(`✅ Edge Dili kaydedildi: ${edgeLanguage.value}`);
+            
+            // Dil değiştiğinde ses seçeneklerini güncelle
+            updateEdgeVoiceOptions();
         }
 
         const edgeVoice = document.getElementById('edge-voice');
