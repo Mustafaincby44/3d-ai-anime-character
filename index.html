@@ -190,21 +190,22 @@
                     <h3>🎤 Ses & TTS Ayarları</h3>
                     
                     <div class="setting-group">
-                        <label>🔑 TTS API Key</label>
-                        <div class="api-input-container">
-                            <input type="password" id="tts-api-key-input" placeholder="TTS API Key girin...">
-                            <button id="save-tts-api-key" class="save-btn">Kaydet</button>
-                        </div>
-                        <div id="tts-api-status" class="api-status"></div>
-                        <div id="tts-api-tier-info" class="tier-info"></div>
-                    </div>
-                    
-                    <div class="setting-group">
                         <label>🎭 TTS Servisi</label>
                         <select id="tts-service">
                             <option value="edge-tts">Edge TTS (Ücretsiz, Sınırsız)</option>
                             <option value="gemini-tts">Gemini TTS (15/gün)</option>
                         </select>
+                    </div>
+                    
+                    <!-- Gemini TTS API Key - Sadece Gemini seçildiğinde görünür -->
+                    <div id="gemini-tts-api-group" class="setting-group" style="display: none;">
+                        <label>🔑 Gemini TTS API Key</label>
+                        <div class="api-input-container">
+                            <input type="password" id="tts-api-key-input" placeholder="Gemini TTS API Key girin...">
+                            <button id="save-tts-api-key" class="save-btn">Kaydet</button>
+                        </div>
+                        <div id="tts-api-status" class="api-status"></div>
+                        <div id="tts-api-tier-info" class="tier-info"></div>
                     </div>
                     
                     <!-- Edge TTS Ayarları -->
