@@ -80,6 +80,9 @@ let apiUsage = {
     }
 };
 
+// Global erişim için window objesine ekle
+window.apiUsage = apiUsage;
+
 // Load saved usage immediately
 function loadSavedUsage() {
     const saved = localStorage.getItem('apiUsage');
@@ -209,8 +212,8 @@ let mouthAnimationSpeed = 0.15;
 const modelUrl = 'https://mustafaincby44.github.io/A-_AnimeGirl/public/AIAnimeGirl.vrm';
 const fallbackModelUrl = 'https://pixiv.github.io/three-vrm/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm';
 
-// API Key
-const API_KEY = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
+// API Key - Ayarlardan alınacak
+// const API_KEY = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
 
 // ===== INITIALIZATION =====
 function init() {
@@ -2194,12 +2197,14 @@ function loadCurrentSettings() {
         const responseApiKeyInput = document.getElementById('response-api-key-input');
         if (responseApiKeyInput) {
             responseApiKeyInput.value = localStorage.getItem('responseApiKey') || '';
+            apiUsage.responseApiKey = responseApiKeyInput.value; // Global değişkeni güncelle
         }
 
         // Response Model
         const responseModel = document.getElementById('response-model');
         if (responseModel) {
             responseModel.value = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
+            currentResponseModel = responseModel.value; // Global değişkeni güncelle
         }
 
         // Karakter kişiliği
@@ -2213,12 +2218,14 @@ function loadCurrentSettings() {
         const ttsApiKeyInput = document.getElementById('tts-api-key-input');
         if (ttsApiKeyInput) {
             ttsApiKeyInput.value = localStorage.getItem('ttsApiKey') || '';
+            apiUsage.ttsApiKey = ttsApiKeyInput.value; // Global değişkeni güncelle
         }
 
         // TTS Servisi
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
             ttsService.value = localStorage.getItem('ttsService') || 'edge-tts';
+            currentTTSModel = ttsService.value; // Global değişkeni güncelle
             updateTTSServiceSettings();
         }
 
@@ -2508,6 +2515,7 @@ function saveAllSettings() {
         const responseApiKeyInput = document.getElementById('response-api-key-input');
         if (responseApiKeyInput) {
             localStorage.setItem('responseApiKey', responseApiKeyInput.value);
+            apiUsage.responseApiKey = responseApiKeyInput.value; // Global değişkeni güncelle
             console.log(`✅ Response API Key kaydedildi: ${responseApiKeyInput.value}`);
         }
 
@@ -2515,6 +2523,7 @@ function saveAllSettings() {
         const responseModel = document.getElementById('response-model');
         if (responseModel) {
             localStorage.setItem('responseModel', responseModel.value);
+            currentResponseModel = responseModel.value; // Global değişkeni güncelle
             console.log(`✅ Response Model kaydedildi: ${responseModel.value}`);
         }
 
@@ -2648,12 +2657,23 @@ function applySettings() {
     const defaultLanguage = localStorage.getItem('defaultLanguage') || 'tr';
     console.log(`🌍 Varsayılan dil: ${defaultLanguage}`);
 
+    // API Keys
+    const responseApiKey = localStorage.getItem('responseApiKey') || '';
+    apiUsage.responseApiKey = responseApiKey; // Global değişkeni güncelle
+    console.log(`🔑 Response API Key güncellendi: ${responseApiKey ? 'Mevcut' : 'Yok'}`);
+
+    const ttsApiKey = localStorage.getItem('ttsApiKey') || '';
+    apiUsage.ttsApiKey = ttsApiKey; // Global değişkeni güncelle
+    console.log(`🔑 TTS API Key güncellendi: ${ttsApiKey ? 'Mevcut' : 'Yok'}`);
+
     // Response model
     const responseModel = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
+    currentResponseModel = responseModel; // Global değişkeni güncelle
     console.log(`🧠 Response model: ${responseModel}`);
 
     // TTS servisi
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
+    currentTTSModel = ttsService; // Global değişkeni güncelle
     console.log(`🎤 TTS servisi: ${ttsService}`);
 
     // Karakter teması
