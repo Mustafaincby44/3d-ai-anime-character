@@ -928,22 +928,13 @@ async function speakText(text) {
             // Edge TTS kullan
             console.log('🎵 Using Edge TTS...');
             
-            // Edge TTS ayarlarını al
-            const edgeLanguage = document.getElementById('edge-language')?.value || 'tr';
+            // Kullanıcının seçtiği ayarları kullan (otomatik değiştirme yok)
             const edgeVoice = document.getElementById('edge-voice')?.value || 'tr-TR-EmelNeural';
             const edgeSpeed = parseFloat(document.getElementById('edge-speed')?.value || 1.0);
             
-            // Dil tespiti yap
-            const detectedLang = detectLanguage(text);
-            let selectedVoice = edgeVoice;
+            console.log(`🎭 Using selected voice: ${edgeVoice}, speed: ${edgeSpeed}x`);
             
-            // Eğer tespit edilen dil farklıysa, o dildeki uygun sesi seç
-            if (detectedLang !== edgeLanguage) {
-                selectedVoice = getVoiceForLanguage(detectedLang, 'female');
-                console.log(`🌍 Language detected: ${detectedLang}, using voice: ${selectedVoice}`);
-            }
-            
-            const audioBuffer = await generateEdgeTTS(text, selectedVoice, edgeSpeed);
+            const audioBuffer = await generateEdgeTTS(text, edgeVoice, edgeSpeed);
             if (audioBuffer) {
                 console.log('✅ Edge TTS successful, playing audio');
                 playAudio(audioBuffer);
@@ -3062,6 +3053,8 @@ function applyUITheme(theme) {
     }
 }
 
+
+
 // Edge TTS ile ses üret
 async function generateEdgeTTS(text, voice, speed) {
     console.log('🎵 Edge TTS başlatılıyor...', { text: text.substring(0, 50), voice, speed });
@@ -3211,8 +3204,8 @@ function getTTSLimit() {
     // Fallback limits
     const fallbackLimits = {
         'edge-tts': 999999, // Unlimited
-        'gemini-2.5-flash-preview-tts': 300,
-        'gemini-2.0-flash-preview-tts': 200
+        'gemini-2.5-flash-preview-tts': 15,
+        'gemini-2.0-flash-preview-tts': 15
     };
     
     return fallbackLimits[model] || 300;
