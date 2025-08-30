@@ -268,8 +268,8 @@ class ThoughtGenerator {
         this.emotionMemory = [];
         this.personalityEvolution = {...BRAIN_CONFIG.personality};
         
-        // API Key for dynamic responses
-        this.API_KEY = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
+        // API Key - Ayarlardan alınacak
+        // this.API_KEY = "AIzaSyDVKrvvjIc5dQkiEwpPHYOOzF1TI7ennks";
     }
 
     // 🔥 DYNAMIC EMOTION-BASED THOUGHT GENERATION (Gemini)
@@ -357,7 +357,13 @@ JSON formatında cevap ver: {"thought": "...", "mood_shift": "none/slight/strong
 
     // Call Gemini API for dynamic responses
     async callGeminiAPI(prompt) {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${this.API_KEY}`;
+        // API key'i ayarlardan al
+        const apiKey = window.apiUsage?.responseApiKey || this.API_KEY || '';
+        if (!apiKey) {
+            throw new Error('No API key available');
+        }
+        
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
         
         const requestBody = {
             contents: [{
