@@ -748,6 +748,9 @@ async function getAIResponse(prompt) {
     // Track API usage
     trackAPIUsage('response');
     
+    console.log(`🧠 getAIResponse çağrıldı - currentResponseModel: ${currentResponseModel}`);
+    console.log(`🔑 API Key: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
+    
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
     
     const requestBody = {
@@ -1531,6 +1534,9 @@ async function getAIResponseWithBrain(userMessage) {
     
     // Track API usage
     trackAPIUsage('response');
+    
+    console.log(`🧠 getAIResponseWithBrain çağrıldı - currentResponseModel: ${currentResponseModel}`);
+    console.log(`🔑 API Key: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
     
     // Call Gemini API with enhanced prompt (use current model)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
@@ -2628,6 +2634,12 @@ function saveAllSettings() {
         // Ayarları uygula
         applySettings();
 
+        // Global değişkenleri güncelle
+        console.log('🔄 Global değişkenler güncelleniyor...');
+        console.log(`🧠 currentResponseModel: ${currentResponseModel}`);
+        console.log(`🎤 currentTTSModel: ${currentTTSModel}`);
+        console.log(`🔑 responseApiKey: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
+
         console.log('✅ Tüm ayarlar başarıyla kaydedildi');
 
     } catch (error) {
@@ -2668,8 +2680,9 @@ function applySettings() {
 
     // Response model
     const responseModel = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
+    console.log(`📥 localStorage'dan alınan response model: ${responseModel}`);
     currentResponseModel = responseModel; // Global değişkeni güncelle
-    console.log(`🧠 Response model: ${responseModel}`);
+    console.log(`🧠 Global currentResponseModel güncellendi: ${currentResponseModel}`);
 
     // TTS servisi
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
