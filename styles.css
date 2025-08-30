@@ -1304,96 +1304,145 @@ input[type="color"]::-webkit-color-swatch {
         width: 95%;
         max-width: none;
         margin: 10px;
-        max-height: 90vh;
+        max-height: 85vh;
         overflow-y: auto;
+        top: 5vh;
     }
     
     .settings-content {
-        padding: 15px;
+        padding: 12px;
     }
     
     .settings-header h2 {
-        font-size: 20px;
+        font-size: 18px;
+        margin-bottom: 10px;
     }
     
     /* Tabs Mobile */
     .settings-tabs {
         flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 20px;
+        gap: 6px;
+        margin-bottom: 15px;
+        justify-content: center;
     }
     
     .tab-btn {
-        flex: 1;
-        min-width: 120px;
-        font-size: 14px;
-        padding: 12px 8px;
+        flex: 0 0 auto;
+        min-width: 100px;
+        max-width: 120px;
+        font-size: 12px;
+        padding: 8px 6px;
+        margin: 2px;
     }
     
     .tab-btn i {
+        font-size: 14px;
+        margin-right: 4px;
+    }
+    
+    /* Tab Content Mobile */
+    .tab-content {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .tab-panel {
+        padding: 10px 0;
+    }
+    
+    .tab-panel h3 {
         font-size: 16px;
-        margin-right: 6px;
+        margin-bottom: 15px;
     }
     
     /* Setting Groups Mobile */
     .setting-group {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     
     .setting-group label {
-        font-size: 16px;
-        margin-bottom: 8px;
+        font-size: 14px;
+        margin-bottom: 6px;
+        display: block;
     }
     
     /* Input Fields Mobile */
     .setting-group input,
     .setting-group select {
-        font-size: 16px;
-        padding: 12px;
+        font-size: 14px;
+        padding: 8px 10px;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     /* Slider Container Mobile */
     .slider-container {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
+        align-items: stretch;
     }
     
     .slider-container input[type="range"] {
         width: 100%;
+        margin: 0;
     }
     
     .slider-container span {
         text-align: center;
         min-width: auto;
+        font-size: 14px;
     }
     
     /* Color Options Mobile */
     .color-options {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
     }
     
     .color-option {
         width: 100%;
     }
     
+    .color-option label {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    
+    .color-option input[type="color"] {
+        width: 100%;
+        height: 40px;
+    }
+    
     /* Toggle Container Mobile */
     .toggle-container {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
+    }
+    
+    .toggle-container span {
+        font-size: 13px;
+        line-height: 1.4;
     }
     
     /* Footer Buttons Mobile */
     .footer-buttons {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
+        margin-top: 15px;
     }
     
     .footer-buttons button {
         width: 100%;
-        padding: 15px;
-        font-size: 16px;
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Close Button Mobile */
+    .close-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
     }
     
     /* API Limit Toggle Mobile */
@@ -1440,28 +1489,58 @@ input[type="color"]::-webkit-color-swatch {
     .settings-modal {
         width: 98%;
         margin: 5px;
-        max-height: 95vh;
+        max-height: 90vh;
+        top: 2vh;
     }
     
     .settings-content {
-        padding: 12px;
+        padding: 10px;
+    }
+    
+    .settings-header h2 {
+        font-size: 16px;
     }
     
     .tab-btn {
-        min-width: 100px;
+        min-width: 80px;
+        max-width: 100px;
+        font-size: 11px;
+        padding: 6px 4px;
+        margin: 1px;
+    }
+    
+    .tab-btn i {
+        font-size: 12px;
+        margin-right: 3px;
+    }
+    
+    .tab-content {
+        max-height: 65vh;
+    }
+    
+    .tab-panel h3 {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .setting-group {
+        margin-bottom: 12px;
+    }
+    
+    .setting-group label {
         font-size: 13px;
-        padding: 10px 6px;
+        margin-bottom: 5px;
     }
     
     .setting-group input,
     .setting-group select {
-        font-size: 16px;
-        padding: 14px;
+        font-size: 13px;
+        padding: 10px;
     }
     
     .footer-buttons button {
-        padding: 18px;
-        font-size: 18px;
+        padding: 15px;
+        font-size: 15px;
     }
     
     .api-limit-toggle {
@@ -1479,5 +1558,26 @@ input[type="color"]::-webkit-color-swatch {
         min-width: 260px;
         top: 60px;
         padding: 12px;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .settings-modal {
+        max-height: 95vh;
+        top: 2vh;
+    }
+    
+    .tab-content {
+        max-height: 70vh;
+    }
+    
+    .settings-tabs {
+        margin-bottom: 10px;
+    }
+    
+    .tab-btn {
+        padding: 6px 4px;
+        font-size: 11px;
     }
 }
