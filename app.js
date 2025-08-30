@@ -775,7 +775,7 @@ async function getAIResponse(prompt) {
     return JSON.parse(text.replaceAll("```json", "").replaceAll("```", "").trim());
 }
 
-function speakText(text) {
+async function speakText(text) {
     if (!text || text.trim().length < 2) return;
 
     setAppState('speaking');
@@ -2390,6 +2390,98 @@ function saveAllSettings() {
             localStorage.setItem('main-ui-theme', mainUITheme.value);
             console.log(`✅ UI teması kaydedildi: ${mainUITheme.value}`);
         }
+        
+        // Yeni UI ayarları
+        const borderRadiusSlider = document.getElementById('border-radius');
+        if (borderRadiusSlider) {
+            localStorage.setItem('border-radius', borderRadiusSlider.value);
+        }
+        
+        const transparencySlider = document.getElementById('transparency');
+        if (transparencySlider) {
+            localStorage.setItem('transparency', transparencySlider.value);
+        }
+        
+        const colorIntensitySlider = document.getElementById('color-intensity');
+        if (colorIntensitySlider) {
+            localStorage.setItem('color-intensity', colorIntensitySlider.value);
+        }
+        
+        const primaryColorInput = document.getElementById('primary-color');
+        if (primaryColorInput) {
+            localStorage.setItem('primary-color', primaryColorInput.value);
+        }
+        
+        const secondaryColorInput = document.getElementById('secondary-color');
+        if (secondaryColorInput) {
+            localStorage.setItem('secondary-color', secondaryColorInput.value);
+        }
+        
+        const accentColorInput = document.getElementById('accent-color');
+        if (accentColorInput) {
+            localStorage.setItem('accent-color', accentColorInput.value);
+        }
+        
+        const messagePositionSelect = document.getElementById('message-position');
+        if (messagePositionSelect) {
+            localStorage.setItem('message-position', messagePositionSelect.value);
+        }
+        
+        const messageBoxStyleSelect = document.getElementById('message-box-style');
+        if (messageBoxStyleSelect) {
+            localStorage.setItem('message-box-style', messageBoxStyleSelect.value);
+        }
+        
+        const messageAnimationSelect = document.getElementById('message-animation');
+        if (messageAnimationSelect) {
+            localStorage.setItem('message-animation', messageAnimationSelect.value);
+        }
+        
+        const userMessageColorInput = document.getElementById('user-message-color');
+        if (userMessageColorInput) {
+            localStorage.setItem('user-message-color', userMessageColorInput.value);
+        }
+        
+        const botMessageColorInput = document.getElementById('bot-message-color');
+        if (botMessageColorInput) {
+            localStorage.setItem('bot-message-color', botMessageColorInput.value);
+        }
+        
+        // Efekt toggle'ları
+        const animationEffectsToggle = document.getElementById('animation-effects');
+        if (animationEffectsToggle) {
+            localStorage.setItem('animation-effects', animationEffectsToggle.checked);
+        }
+        
+        const shadowEffectsToggle = document.getElementById('shadow-effects');
+        if (shadowEffectsToggle) {
+            localStorage.setItem('shadow-effects', shadowEffectsToggle.checked);
+        }
+        
+        const gradientEffectsToggle = document.getElementById('gradient-effects');
+        if (gradientEffectsToggle) {
+            localStorage.setItem('gradient-effects', gradientEffectsToggle.checked);
+        }
+        
+        const crystalEffectToggle = document.getElementById('crystal-effect');
+        if (crystalEffectToggle) {
+            localStorage.setItem('crystal-effect', crystalEffectToggle.checked);
+        }
+        
+        const neonEffectToggle = document.getElementById('neon-effect');
+        if (neonEffectToggle) {
+            localStorage.setItem('neon-effect', neonEffectToggle.checked);
+        }
+        
+        const messageTypingEffectToggle = document.getElementById('message-typing-effect');
+        if (messageTypingEffectToggle) {
+            localStorage.setItem('message-typing-effect', messageTypingEffectToggle.checked);
+        }
+        
+        const messageDecorationToggle = document.getElementById('message-decoration');
+        if (messageDecorationToggle) {
+            localStorage.setItem('message-decoration', messageDecorationToggle.checked);
+        }
 
         // Ses ayarları
         const volumeSlider = document.getElementById('volume-slider');
@@ -2758,5 +2850,42 @@ function applyUITheme(theme) {
             root.style.setProperty('--primary-color', '#1e1e2e');
             root.style.setProperty('--secondary-color', '#2d2d44');
             break;
+    }
+}
+
+// Edge TTS ile ses üret
+async function generateEdgeTTS(text, voice, speed) {
+    console.log('🎵 Edge TTS başlatılıyor...', { text: text.substring(0, 50), voice, speed });
+    
+    try {
+        const response = await fetch('http://localhost:5000/tts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: text,
+                voice: voice,
+                speed: speed
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Edge TTS API error: ${response.status}`);
+        }
+        
+        const audioBlob = await response.blob();
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        
+        // AudioContext ile ses dosyasını decode et
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        console.log('✅ Edge TTS başarılı, audio buffer oluşturuldu');
+        return audioBuffer;
+        
+    } catch (error) {
+        console.error('❌ Edge TTS hatası:', error);
+        return null;
     }
 }
