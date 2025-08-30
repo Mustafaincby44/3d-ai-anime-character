@@ -14,16 +14,52 @@
 <body>
     <div id="canvas-container"></div>
     
-    <!-- API Limit Display - Top of screen -->
-    <div id="api-limit-display" class="api-limit-display">
-        <div class="limit-item">
-            📝 Cevap: <span id="top-response-used">0</span>/<span id="top-response-limit">1500</span>
+    <!-- API Info Toggle Button - Top right -->
+    <div id="api-info-toggle" class="api-info-toggle">
+        <svg id="toggle-arrow" class="toggle-arrow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+        </svg>
+    </div>
+
+    <!-- API Info Panel - Hidden by default -->
+    <div id="api-info-panel" class="api-info-panel hidden">
+        <div class="api-info-header">
+            <h3>📊 API Bilgileri</h3>
         </div>
-        <div class="limit-item">
-            🎵 TTS: <span id="top-tts-used">0</span>/<span id="top-tts-limit">300</span>
-        </div>
-        <div class="limit-item">
-            📱 Model: <span id="top-current-model">Gemini 2.5 Flash</span>
+        <div class="api-info-content">
+            <div class="api-info-section">
+                <h4>🧠 Response Model</h4>
+                <div class="model-info">
+                    <span id="current-response-model">Gemini 2.5 Flash Lite</span>
+                    <div class="usage-bar">
+                        <div class="usage-fill" id="response-usage-fill"></div>
+                    </div>
+                    <span class="usage-text">
+                        <span id="response-used">0</span>/<span id="response-limit">1500</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="api-info-section">
+                <h4>🎤 TTS Model</h4>
+                <div class="model-info">
+                    <span id="current-tts-model">Edge TTS</span>
+                    <div class="usage-bar">
+                        <div class="usage-fill" id="tts-usage-fill"></div>
+                    </div>
+                    <span class="usage-text">
+                        <span id="tts-used">0</span>/<span id="tts-limit">∞</span>
+                    </span>
+                </div>
+            </div>
+            
+            <div class="api-info-section">
+                <h4>🔑 API Durumu</h4>
+                <div class="api-status-info">
+                    <span id="response-api-status">✅ Aktif</span>
+                    <span id="tts-api-status">✅ Aktif</span>
+                </div>
+            </div>
         </div>
     </div>
     
