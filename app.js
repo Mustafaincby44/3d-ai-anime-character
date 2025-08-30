@@ -233,11 +233,6 @@ function init() {
         initializeAPITracking();
     }, 500);
     
-    // Initialize API info panel
-    setTimeout(() => {
-        initializeAPIInfoPanel();
-    }, 1000);
-    
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 1.0));
     scene.add(new THREE.HemisphereLight(0xffffbb, 0x080820, 2.0));
@@ -279,6 +274,12 @@ function init() {
     
     // Settings event listeners
     initializeSettings();
+    
+    // API Limit Toggle event listener
+    const limitToggle = document.getElementById('api-limit-toggle');
+    if (limitToggle) {
+        limitToggle.addEventListener('click', toggleLimitPanel);
+    }
 }
 
 function createParticles() {
@@ -579,6 +580,7 @@ function trackAPIUsage(type, response = null) {
     
     // Update UI
     updateLimitDisplay();
+    updateLimitPanel();
     
     // Save to localStorage
     saveAPIUsage();
@@ -633,10 +635,8 @@ function updateLimitDisplay() {
         ttsLimitInfo.innerHTML = `📊 ${tier.toUpperCase()}: ${ttsLimits.rpd} istek/gün | Kullanılan: <span id="tts-used">${apiUsage.ttsRequests}</span>`;
     }
     
-    // Update API info panel if it exists
-    if (document.getElementById('api-info-panel')) {
-        updateAPIInfoPanel();
-    }
+    // Limit panel'i güncelle
+    updateLimitPanel();
 }
 
 function getCurrentLimits() {
@@ -757,9 +757,6 @@ async function handleUserInput() {
 async function getAIResponse(prompt) {
     // Track API usage
     trackAPIUsage('response');
-    
-    console.log(`🧠 getAIResponse çağrıldı - currentResponseModel: ${currentResponseModel}`);
-    console.log(`🔑 API Key: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
     
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
     
@@ -1545,9 +1542,6 @@ async function getAIResponseWithBrain(userMessage) {
     // Track API usage
     trackAPIUsage('response');
     
-    console.log(`🧠 getAIResponseWithBrain çağrıldı - currentResponseModel: ${currentResponseModel}`);
-    console.log(`🔑 API Key: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
-    
     // Call Gemini API with enhanced prompt (use current model)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentResponseModel}:generateContent?key=${apiUsage.responseApiKey}`;
     
@@ -2310,6 +2304,9 @@ function loadCurrentSettings() {
         }
 
         console.log('✅ Ayarlar başarıyla yüklendi');
+        
+        // Limit panel'i güncelle
+        updateLimitPanel();
 
     } catch (error) {
         console.error('❌ Ayarlar yüklenirken hata:', error);
@@ -2643,12 +2640,9 @@ function saveAllSettings() {
 
         // Ayarları uygula
         applySettings();
-
-        // Global değişkenleri güncelle
-        console.log('🔄 Global değişkenler güncelleniyor...');
-        console.log(`🧠 currentResponseModel: ${currentResponseModel}`);
-        console.log(`🎤 currentTTSModel: ${currentTTSModel}`);
-        console.log(`🔑 responseApiKey: ${apiUsage.responseApiKey ? 'Mevcut' : 'Yok'}`);
+        
+        // Limit panel'i güncelle
+        updateLimitPanel();
 
         console.log('✅ Tüm ayarlar başarıyla kaydedildi');
 
@@ -2690,9 +2684,8 @@ function applySettings() {
 
     // Response model
     const responseModel = localStorage.getItem('responseModel') || 'gemini-2.5-flash-lite';
-    console.log(`📥 localStorage'dan alınan response model: ${responseModel}`);
     currentResponseModel = responseModel; // Global değişkeni güncelle
-    console.log(`🧠 Global currentResponseModel güncellendi: ${currentResponseModel}`);
+    console.log(`🧠 Response model: ${responseModel}`);
 
     // TTS servisi
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
@@ -2706,6 +2699,9 @@ function applySettings() {
     // Debug modu
     const debugMode = localStorage.getItem('debugMode') === 'true';
     console.log(`📊 Debug modu: ${debugMode ? 'Aktif' : 'Pasif'}`);
+    
+    // Limit panel'i güncelle
+    updateLimitPanel();
 }
 
 // Karakter temasını uygula
@@ -2933,112 +2929,121 @@ async function generateEdgeTTS(text, voice, speed) {
     }
 }
 
-// ===== API INFO PANEL FUNCTIONS =====
-function initializeAPIInfoPanel() {
-    const toggleBtn = document.getElementById('api-info-toggle');
-    const infoPanel = document.getElementById('api-info-panel');
-    const toggleArrow = document.getElementById('toggle-arrow');
+// API Limit Toggle
+let isLimitPanelOpen = false;
+
+function toggleLimitPanel() {
+    const panel = document.getElementById('api-limit-panel');
+    const arrow = document.getElementById('toggle-arrow');
     
-    if (!toggleBtn || !infoPanel || !toggleArrow) {
-        console.error('❌ API info panel elements not found');
-        return;
-    }
-    
-    // Toggle button click
-    toggleBtn.addEventListener('click', () => {
-        const isHidden = infoPanel.classList.contains('hidden');
+    if (isLimitPanelOpen) {
+        // Panel'i kapat
+        panel.classList.remove('show');
+        panel.classList.add('hidden');
+        arrow.classList.remove('rotated');
+        isLimitPanelOpen = false;
+    } else {
+        // Panel'i aç
+        panel.classList.remove('hidden');
+        panel.classList.add('show');
+        arrow.classList.add('rotated');
+        isLimitPanelOpen = false;
         
-        if (isHidden) {
-            // Show panel
-            infoPanel.classList.remove('hidden');
-            toggleArrow.classList.add('rotated');
-            updateAPIInfoPanel();
-        } else {
-            // Hide panel
-            infoPanel.classList.add('hidden');
-            toggleArrow.classList.remove('rotated');
-        }
-    });
-    
-    console.log('✅ API info panel initialized');
+        // Panel'i otomatik kapat (5 saniye sonra)
+        setTimeout(() => {
+            if (isLimitPanelOpen) {
+                toggleLimitPanel();
+            }
+        }, 5000);
+    }
 }
 
-// Update API info panel content
-function updateAPIInfoPanel() {
-    // Update response model
-    const responseModelElement = document.getElementById('current-response-model');
-    if (responseModelElement) {
-        responseModelElement.textContent = currentResponseModel;
+// API limit panel'i güncelle
+function updateLimitPanel() {
+    const responseUsed = document.getElementById('top-response-used');
+    const responseLimit = document.getElementById('top-response-limit');
+    const ttsUsed = document.getElementById('top-tts-used');
+    const ttsLimit = document.getElementById('top-tts-limit');
+    const currentModel = document.getElementById('top-current-model');
+    const currentTTS = document.getElementById('top-current-tts');
+    
+    if (responseUsed && responseLimit) {
+        responseUsed.textContent = apiUsage.responseRequests;
+        responseLimit.textContent = getResponseLimit();
     }
     
-    // Update TTS model
-    const ttsModelElement = document.getElementById('current-tts-model');
-    if (ttsModelElement) {
-        ttsModelElement.textContent = currentTTSModel === 'edge-tts' ? 'Edge TTS' : 'Gemini TTS';
+    if (ttsUsed && ttsLimit) {
+        ttsUsed.textContent = apiUsage.ttsRequests;
+        ttsLimit.textContent = getTTSLimit();
     }
     
-    // Update usage bars
-    updateUsageBars();
+    if (currentModel) {
+        currentModel.textContent = getModelDisplayName(currentResponseModel);
+    }
     
-    // Update API status
-    updateAPIStatusInPanel();
+    if (currentTTS) {
+        currentTTS.textContent = getTTSServiceDisplayName(currentTTSModel);
+    }
 }
 
-// Update usage bars
-function updateUsageBars() {
-    const responseUsed = apiUsage.responseRequests || 0;
-    const responseLimit = apiUsage.realUsage.response.limit || 1500;
-    const ttsUsed = apiUsage.ttsRequests || 0;
-    const ttsLimit = apiUsage.realUsage.tts.limit || 300;
-    
-    // Response usage bar
-    const responseUsageFill = document.getElementById('response-usage-fill');
-    if (responseUsageFill) {
-        const responsePercentage = Math.min((responseUsed / responseLimit) * 100, 100);
-        responseUsageFill.style.width = `${responsePercentage}%`;
-    }
-    
-    // TTS usage bar
-    const ttsUsageFill = document.getElementById('tts-usage-fill');
-    if (ttsUsageFill) {
-        const ttsPercentage = Math.min((ttsUsed / ttsLimit) * 100, 100);
-        ttsUsageFill.style.width = `${ttsPercentage}%`;
-    }
-    
-    // Update usage text
-    const responseUsedElement = document.getElementById('response-used');
-    const responseLimitElement = document.getElementById('response-limit');
-    const ttsUsedElement = document.getElementById('tts-used');
-    const ttsLimitElement = document.getElementById('tts-limit');
-    
-    if (responseUsedElement) responseUsedElement.textContent = responseUsed;
-    if (responseLimitElement) responseLimitElement.textContent = responseLimit;
-    if (ttsUsedElement) ttsUsedElement.textContent = ttsUsed;
-    if (ttsLimitElement) ttsLimitElement.textContent = ttsLimit === 300 ? '300' : '∞';
+// Model display name'i al
+function getModelDisplayName(model) {
+    const modelNames = {
+        'gemini-2.5-flash-lite': 'Gemini 2.5 Flash Lite',
+        'gemini-2.0-flash': 'Gemini 2.0 Flash',
+        'gemini-1.5-flash': 'Gemini 1.5 Flash',
+        'gemini-1.5-pro': 'Gemini 1.5 Pro',
+        'gemini-pro': 'Gemini Pro'
+    };
+    return modelNames[model] || model;
 }
 
-// Update API status in panel
-function updateAPIStatusInPanel() {
-    const responseStatusElement = document.getElementById('response-api-status');
-    const ttsStatusElement = document.getElementById('tts-api-status');
+// TTS service display name'i al
+function getTTSServiceDisplayName(service) {
+    const serviceNames = {
+        'edge-tts': 'Edge TTS',
+        'gemini-2.5-flash-preview-tts': 'Gemini 2.5 Flash TTS',
+        'gemini-2.0-flash-preview-tts': 'Gemini 2.0 Flash TTS'
+    };
+    return serviceNames[service] || service;
+}
+
+// Response limit'i al
+function getResponseLimit() {
+    const tier = apiUsage.tier;
+    const model = currentResponseModel;
     
-    if (responseStatusElement) {
-        if (apiUsage.responseApiKey) {
-            responseStatusElement.textContent = '✅ Aktif';
-            responseStatusElement.className = 'status-active';
-        } else {
-            responseStatusElement.textContent = '❌ API Key Yok';
-            responseStatusElement.className = 'status-inactive';
-        }
+    if (API_LIMITS[tier] && API_LIMITS[tier][model]) {
+        return API_LIMITS[tier][model].response;
     }
     
-    if (ttsStatusElement) {
-        if (apiUsage.ttsApiKey || currentTTSModel === 'edge-tts') {
-            ttsStatusElement.textContent = '✅ Aktif';
-            ttsStatusElement.className = 'status-active';
-        } else {
-            ttsStatusElement.textContent = '❌ API Key Yok';
-            ttsStatusElement.className = 'status-inactive';
-        }
+    // Fallback limits
+    const fallbackLimits = {
+        'gemini-2.5-flash-lite': 1500,
+        'gemini-2.0-flash': 1000,
+        'gemini-1.5-flash': 800,
+        'gemini-1.5-pro': 600,
+        'gemini-pro': 500
+    };
+    
+    return fallbackLimits[model] || 1000;
+}
+
+// TTS limit'i al
+function getTTSLimit() {
+    const tier = apiUsage.tier;
+    const model = currentTTSModel;
+    
+    if (API_LIMITS[tier] && API_LIMITS[tier][model]) {
+        return API_LIMITS[tier][model].tts;
     }
+    
+    // Fallback limits
+    const fallbackLimits = {
+        'edge-tts': 999999, // Unlimited
+        'gemini-2.5-flash-preview-tts': 300,
+        'gemini-2.0-flash-preview-tts': 200
+    };
+    
+    return fallbackLimits[model] || 300;
 }
