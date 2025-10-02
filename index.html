@@ -23,31 +23,31 @@
     <div id="api-limit-panel" class="api-limit-panel hidden">
         <div class="limit-panel-content">
             <div class="limit-header">
-                <span>📊 API Kullanımı</span>
+                <span data-i18n="limit.title">📊 API Kullanımı</span>
             </div>
             <div class="limit-items">
                 <div class="limit-item">
                     <span class="limit-icon">📝</span>
-                    <span class="limit-label">Cevap:</span>
+                    <span class="limit-label" data-i18n="limit.response">Cevap:</span>
                     <span class="limit-usage">
                         <span id="top-response-used">0</span>/<span id="top-response-limit">1500</span>
                     </span>
                 </div>
                 <div class="limit-item">
                     <span class="limit-icon">🎵</span>
-                    <span class="limit-label">TTS:</span>
+                    <span class="limit-label" data-i18n="limit.tts">TTS:</span>
                     <span class="limit-usage">
                         <span id="top-tts-used">0</span>/<span id="top-tts-limit">300</span>
                     </span>
                 </div>
                 <div class="limit-item">
                     <span class="limit-icon">🧠</span>
-                    <span class="limit-label">Model:</span>
+                    <span class="limit-label" data-i18n="limit.model">Model:</span>
                     <span class="limit-usage" id="top-current-model">Gemini 2.5 Flash</span>
                 </div>
                 <div class="limit-item">
                     <span class="limit-icon">🎤</span>
-                    <span class="limit-label">TTS Servisi:</span>
+                    <span class="limit-label" data-i18n="limit.service">TTS Servisi:</span>
                     <span class="limit-usage" id="top-current-tts">Edge TTS</span>
                 </div>
             </div>
@@ -67,7 +67,7 @@
         <div class="settings-content">
             <!-- Header -->
             <div class="settings-header">
-                <h2>⚙️ Ayarlar</h2>
+                <h2 data-i18n="settings.title">⚙️ Ayarlar</h2>
                 <button id="close-settings" class="close-btn">
                     <i class="fas fa-times"></i>
                 </button>
@@ -77,35 +77,35 @@
             <div class="settings-tabs">
                 <button class="tab-btn active" data-tab="general">
                     <i class="fas fa-home"></i>
-                    Genel
+                    <span data-i18n="tabs.general">Genel</span>
                 </button>
                 <button class="tab-btn" data-tab="ai">
                     <i class="fas fa-brain"></i>
-                    AI & Cevap
+                    <span data-i18n="tabs.ai">AI & Cevap</span>
                 </button>
                 <button class="tab-btn" data-tab="voice">
                     <i class="fas fa-microphone"></i>
-                    Ses & TTS
+                    <span data-i18n="tabs.voice">Ses & TTS</span>
                 </button>
                 <button class="tab-btn" data-tab="character">
                     <i class="fas fa-user"></i>
-                    Karakter
+                    <span data-i18n="tabs.character">Karakter</span>
                 </button>
                 <button class="tab-btn" data-tab="ui-design">
                     <i class="fas fa-palette"></i>
-                    UI Tasarımı
+                    <span data-i18n="tabs.uiDesign">UI Tasarımı</span>
                 </button>
                 <button class="tab-btn" data-tab="colors">
                     <i class="fas fa-paint-brush"></i>
-                    Renk & Süsleme
+                    <span data-i18n="tabs.colors">Renk & Süsleme</span>
                 </button>
                 <button class="tab-btn" data-tab="message-style">
                     <i class="fas fa-comments"></i>
-                    Mesaj Yeri
+                    <span data-i18n="tabs.messageStyle">Mesaj Yeri</span>
                 </button>
                 <button class="tab-btn" data-tab="advanced">
                     <i class="fas fa-tools"></i>
-                    Gelişmiş
+                    <span data-i18n="tabs.advanced">Gelişmiş</span>
                 </button>
             </div>
 
@@ -329,7 +329,7 @@
                     <h3>🎨 UI Tasarımı</h3>
                     
                     <div class="setting-group">
-                        <label>📱 Ana Tema</label>
+                        <label data-i18n="uiDesign.mainTheme">📱 Ana Tema</label>
                         <select id="main-ui-theme">
                             <option value="modern">Modern</option>
                             <option value="classic">Klasik</option>
@@ -341,7 +341,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🔲 Köşe Yuvarlaklığı</label>
+                        <label data-i18n="uiDesign.radius">🔲 Köşe Yuvarlaklığı</label>
                         <div class="slider-container">
                             <input type="range" id="border-radius" min="0" max="30" value="12">
                             <span id="border-radius-value">12px</span>
@@ -357,7 +357,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>💫 Animasyon Efektleri</label>
+                        <label data-i18n="uiDesign.animationEffects">💫 Animasyon Efektleri</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="animation-effects" checked>
                             <label for="animation-effects" class="toggle-label"></label>
@@ -366,7 +366,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🎭 Gölge Efektleri</label>
+                        <label data-i18n="uiDesign.shadowEffects">🎭 Gölge Efektleri</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="shadow-effects" checked>
                             <label for="shadow-effects" class="toggle-label"></label>
@@ -380,22 +380,22 @@
                     <h3>🎨 Renk & Süsleme</h3>
                     
                     <div class="setting-group">
-                        <label>🌈 Ana Renk</label>
+                        <label data-i18n="colors.primary">🌈 Ana Renk</label>
                         <input type="color" id="primary-color" value="#6366f1">
                     </div>
                     
                     <div class="setting-group">
-                        <label>🎨 İkincil Renk</label>
+                        <label data-i18n="colors.secondary">🎨 İkincil Renk</label>
                         <input type="color" id="secondary-color" value="#8b5cf6">
                     </div>
                     
                     <div class="setting-group">
-                        <label>✨ Vurgu Rengi</label>
+                        <label data-i18n="colors.accent">✨ Vurgu Rengi</label>
                         <input type="color" id="accent-color" value="#f59e0b">
                     </div>
                     
                     <div class="setting-group">
-                        <label>💪 Renk Yoğunluğu</label>
+                        <label data-i18n="colors.intensity">💪 Renk Yoğunluğu</label>
                         <div class="slider-container">
                             <input type="range" id="color-intensity" min="0" max="100" value="70">
                             <span id="color-intensity-value">70%</span>
@@ -403,7 +403,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🌟 Gradient Efektleri</label>
+                        <label data-i18n="colors.gradient">🌟 Gradient Efektleri</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="gradient-effects" checked>
                             <label for="gradient-effects" class="toggle-label"></label>
@@ -412,7 +412,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>💎 Kristal Efekti</label>
+                        <label data-i18n="colors.crystal">💎 Kristal Efekti</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="crystal-effect">
                             <label for="crystal-effect" class="toggle-label"></label>
@@ -435,7 +435,7 @@
                     <h3>💬 Mesaj Yeri</h3>
                     
                     <div class="setting-group">
-                        <label>📱 Mesaj Konumu</label>
+                        <label data-i18n="message.position">📱 Mesaj Konumu</label>
                         <select id="message-position">
                             <option value="bottom">Alt</option>
                             <option value="center">Orta</option>
@@ -446,7 +446,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🎨 Mesaj Kutusu Stili</label>
+                        <label data-i18n="message.boxStyle">🎨 Mesaj Kutusu Stili</label>
                         <select id="message-box-style">
                             <option value="rounded">Yuvarlak</option>
                             <option value="sharp">Keskin</option>
@@ -457,7 +457,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>💫 Mesaj Animasyonu</label>
+                        <label data-i18n="message.animation">💫 Mesaj Animasyonu</label>
                         <select id="message-animation">
                             <option value="slide">Kaydırma</option>
                             <option value="fade">Solma</option>
@@ -468,7 +468,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🎭 Mesaj Efektleri</label>
+                        <label data-i18n="message.effects">🎭 Mesaj Efektleri</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="message-typing-effect" checked>
                             <label for="message-typing-effect" class="toggle-label"></label>
@@ -477,7 +477,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>✨ Mesaj Süsleme</label>
+                        <label data-i18n="message.decoration">✨ Mesaj Süsleme</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="message-decoration" checked>
                             <label for="message-decoration" class="toggle-label"></label>
@@ -489,11 +489,11 @@
                         <label>🎨 Mesaj Renkleri</label>
                         <div class="color-options">
                             <div class="color-option">
-                                <label>Kullanıcı Mesajı</label>
+                                <label data-i18n="message.user">Kullanıcı Mesajı</label>
                                 <input type="color" id="user-message-color" value="#3b82f6">
                             </div>
                             <div class="color-option">
-                                <label>Bot Mesajı</label>
+                                <label data-i18n="message.bot">Bot Mesajı</label>
                                 <input type="color" id="bot-message-color" value="#10b981">
                             </div>
                         </div>
@@ -502,10 +502,10 @@
                 
                 <!-- Gelişmiş Ayarlar -->
                 <div id="advanced-tab" class="tab-panel">
-                    <h3>🛠️ Gelişmiş Ayarlar</h3>
+                    <h3 data-i18n="advanced.title">🛠️ Gelişmiş Ayarlar</h3>
                     
                     <div class="setting-group">
-                        <label>📊 Debug Modu</label>
+                        <label data-i18n="advanced.debug">📊 Debug Modu</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="debug-mode">
                             <label for="debug-mode" class="toggle-label"></label>
@@ -514,7 +514,7 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>💾 Otomatik Yedekleme</label>
+                        <label data-i18n="advanced.autoBackup">💾 Otomatik Yedekleme</label>
                         <div class="toggle-container">
                             <input type="checkbox" id="auto-backup">
                             <label for="auto-backup" class="toggle-label"></label>
@@ -523,17 +523,17 @@
                     </div>
                     
                     <div class="setting-group">
-                        <label>🔄 Ayarları Sıfırla</label>
-                        <button id="reset-settings" class="danger-btn">Tüm Ayarları Sıfırla</button>
+                        <label data-i18n="advanced.resetTitle">🔄 Ayarları Sıfırla</label>
+                        <button id="reset-settings" class="danger-btn" data-i18n="advanced.reset">Tüm Ayarları Sıfırla</button>
                     </div>
                     
                     <div class="setting-group">
-                        <label>📤 Ayarları Dışa Aktar</label>
-                        <button id="export-settings" class="export-btn">JSON Olarak İndir</button>
+                        <label data-i18n="advanced.exportTitle">📤 Ayarları Dışa Aktar</label>
+                        <button id="export-settings" class="export-btn" data-i18n="advanced.export">JSON Olarak İndir</button>
                     </div>
                     
                     <div class="setting-group">
-                        <label>📥 Ayarları İçe Aktar</label>
+                        <label data-i18n="advanced.importTitle">📥 Ayarları İçe Aktar</label>
                         <input type="file" id="import-settings" accept=".json">
                     </div>
                 </div>
