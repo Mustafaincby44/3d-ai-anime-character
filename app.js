@@ -32,6 +32,7 @@ let messageCount = 0;
 let currentResponseModel = 'gemini-2.5-flash-lite';
 let currentTTSModel = 'gemini-2.5-flash-preview-tts'; // Varsayılan Gemini TTS modeli
 let currentTTSService = 'edge-tts';
+let currentGeminiVoice = 'alnilam';
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -1005,16 +1006,19 @@ async function generateTTS(text) {
             throw new Error(`Unsupported Gemini TTS model: ${currentTTSModel}`);
         }
         
-        // Get selected Gemini voice from UI
+        // Get selected Gemini voice from UI or stored state
         const geminiVoiceSelect = document.getElementById('gemini-voice');
-        const selectedVoice = geminiVoiceSelect?.value || localStorage.getItem('geminiVoice') || 'alnilam';
+        const selectedVoice = (geminiVoiceSelect && geminiVoiceSelect.value) 
+            || currentGeminiVoice 
+            || localStorage.getItem('geminiVoice') 
+            || 'alnilam';
+        currentGeminiVoice = selectedVoice;
 
         const payload = {
             contents: [{ 
                 parts: [{ text: text }] 
             }],
             generationConfig: {
-                responseModalities: ["Audio"],
                 responseModalities: ["AUDIO"],
                 speechConfig: {
                     voiceConfig: {
@@ -2138,6 +2142,15 @@ document.addEventListener('DOMContentLoaded', function() {
             updateLimitDisplay();
         });
     }
+
+    const geminiVoiceSelect = document.getElementById('gemini-voice');
+    if (geminiVoiceSelect) {
+        geminiVoiceSelect.addEventListener('change', (e) => {
+            currentGeminiVoice = e.target.value;
+            localStorage.setItem('geminiVoice', currentGeminiVoice);
+            console.log(`🎵 Gemini voice changed to: ${currentGeminiVoice}`);
+        });
+    }
     
     // Export settings button
     const exportSettingsBtn = document.getElementById('export-settings');
@@ -2391,7 +2404,9 @@ function loadCurrentSettings() {
 
         const geminiVoice = document.getElementById('gemini-voice');
         if (geminiVoice) {
-            geminiVoice.value = localStorage.getItem('geminiVoice') || 'alnilam';
+            const storedVoice = localStorage.getItem('geminiVoice') || 'alnilam';
+            geminiVoice.value = storedVoice;
+            currentGeminiVoice = storedVoice;
         }
 
         // Karakter ayarları
@@ -2759,6 +2774,7 @@ function saveAllSettings() {
         const geminiVoice = document.getElementById('gemini-voice');
         if (geminiVoice) {
             localStorage.setItem('geminiVoice', geminiVoice.value);
+            currentGeminiVoice = geminiVoice.value;
             console.log(`✅ Gemini Sesi kaydedildi: ${geminiVoice.value}`);
         }
 
@@ -2854,6 +2870,9 @@ function applySettings() {
     currentTTSService = ttsService;
     console.log(`🎤 TTS servisi: ${ttsService}`);
     updateTTSServiceSettings();
+
+    currentGeminiVoice = localStorage.getItem('geminiVoice') || 'alnilam';
+    console.log(`🎵 Gemini voice: ${currentGeminiVoice}`);
 
     // Karakter teması
     const characterTheme = localStorage.getItem('characterTheme') || 'default';
