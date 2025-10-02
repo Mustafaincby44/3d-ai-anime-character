@@ -1,49 +1,42 @@
-from flask import Flask, jsonify, request, send_file
-import edge_tts
+from flask import Flask, request, send_file, jsonify
 import asyncio
-import os
-import uuid
+import tempfile
+import edge_tts
 
 app = Flask(__name__)
 
-# Tüm voice listesini alıyoruz
-async def fetch_all_voices():
-    voices = await edge_tts.list_voices()
-    return voices
+language_dict = {
+    "English": {"Luna": "en-SG-LunaNeural"}
+}
 
-# Sesleri saklıyoruz (server açılırken çekiyoruz)
-all_voices = asyncio.run(fetch_all_voices())
-
-@app.route("/voices", methods=["GET"])
-def get_voices():
-    return jsonify(all_voices)
+async def generate_tts(text, voice):
+    communicate = edge_tts.Communicate(text, voice)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
+        await communicate.save(tmp_file.name)
+        return tmp_file.name
 
 @app.route("/speak", methods=["POST"])
 def speak():
     data = request.json
     text = data.get("text")
-    voice = data.get("voice", "en-US-JennyNeural")
-    rate = data.get("rate", "+0%")
-    pitch = data.get("pitch", "+0Hz")
+    language = data.get("language", "English")
+    speaker = data.get("speaker", "Luna")
 
-    if not text:
-        return jsonify({"error": "Missing text"}), 400
+    voice = language_dict.get(language, {}).get(speaker)
+    if not voice:
+        return jsonify({"error": "Voice not found"}), 400
+    if not text or text.strip() == "":
+        return jsonify({"error": "Text is empty"}), 400
 
-    file_id = str(uuid.uuid4())
-    output_file = f"output_{file_id}.wav"
+    try:
+        mp3_path = asyncio.run(generate_tts(text, voice))
+        return send_file(mp3_path, mimetype="audio/mpeg", as_attachment=False)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    async def run_tts():
-        tts = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
-        await tts.save(output_file)
-
-    asyncio.run(run_tts())
-
-    return send_file(output_file, mimetype="audio/wav")
+# CORS için basit çözüm
+from flask_cors import CORS
+CORS(app)
 
 if __name__ == "__main__":
-    print("🚀 Starting Edge TTS Server...")
-    print("📡 Local server: http://localhost:5000")
-    print("🌐 Public URL: https://91df40e54b10.ngrok-free.app")
-    print("🎵 Supported voices:", len(all_voices), "voices available")
-    
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True)
