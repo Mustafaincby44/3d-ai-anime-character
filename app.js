@@ -30,7 +30,8 @@ let messageCount = 0;
 
 // API Settings & Tracking
 let currentResponseModel = 'gemini-2.5-flash-lite';
-let currentTTSModel = 'gemini-2.5-flash-preview-tts'; // TTS için uygun model
+let currentTTSModel = 'gemini-2.5-flash-preview-tts'; // Varsayılan Gemini TTS modeli
+let currentTTSService = 'edge-tts';
 
 // API Rate Limits (Google AI Studio) - Correct Limits
 const API_LIMITS = {
@@ -833,7 +834,7 @@ async function handleUserInput() {
     }
     
     // TTS API key kontrolü - sadece Gemini TTS için gerekli
-    if (currentTTSModel === 'gemini-tts' && !apiUsage.ttsApiKey) {
+    if (currentTTSService === 'gemini-tts' && !apiUsage.ttsApiKey) {
         updateStatus('⚠️ Gemini TTS için API key gerekli! Lütfen ayarlardan TTS API key girin.');
         console.log('❌ No TTS API key provided for Gemini TTS');
         return;
@@ -920,11 +921,11 @@ async function speakText(text) {
     setAppState('speaking');
     isSpeaking = true;
 
-    console.log(`🎵 speakText çağrıldı. currentTTSModel: ${currentTTSModel}`);
+    console.log(`🎵 speakText çağrıldı. service: ${currentTTSService}, model: ${currentTTSModel}`);
 
     try {
         // TTS modeline göre ses üret
-        if (currentTTSModel === 'edge-tts') {
+        if (currentTTSService === 'edge-tts') {
             // Edge TTS kullan
             console.log('🎵 Using Edge TTS...');
             
@@ -978,8 +979,8 @@ async function speakText(text) {
 }
 
 async function generateTTS(text) {
-    console.log('🎵 Starting Gemini TTS generation with:', currentTTSModel);
-    
+    console.log('🎵 Starting Gemini TTS generation with model:', currentTTSModel);
+
     // Check if TTS API key is available for Gemini TTS
     if (!apiUsage.ttsApiKey) {
         console.error('❌ No TTS API key available for Gemini TTS');
@@ -995,11 +996,13 @@ async function generateTTS(text) {
         let apiUrl;
         if (currentTTSModel === 'gemini-2.5-flash-preview-tts') {
             apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiUsage.ttsApiKey}`;
+        } else if (currentTTSModel === 'gemini-2.5-pro-preview-tts') {
+            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-tts:generateContent?key=${apiUsage.ttsApiKey}`;
         } else if (currentTTSModel === 'gemini-2.0-flash-preview-tts') {
             apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-tts:generateContent?key=${apiUsage.ttsApiKey}`;
         } else {
-            // Fallback
-            apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${currentTTSModel}:generateContent?key=${apiUsage.ttsApiKey}`;
+            console.error('❌ Unsupported Gemini TTS model:', currentTTSModel);
+            throw new Error(`Unsupported Gemini TTS model: ${currentTTSModel}`);
         }
         
         // Get selected voice from UI
@@ -1822,14 +1825,6 @@ function initializeSettings() {
         ttsModelSelect.addEventListener('change', (e) => {
             currentTTSModel = e.target.value;
             console.log(`🎵 TTS model changed to: ${currentTTSModel}`);
-            
-            // Only allow TTS-compatible models
-            if (!['gemini-2.5-flash-preview-tts', 'gemini-2.0-flash-preview-tts'].includes(currentTTSModel)) {
-                console.log('⚠️ Warning: This model does not support TTS');
-                currentTTSModel = 'gemini-2.5-flash-preview-tts'; // Force back to TTS model
-                ttsModelSelect.value = 'gemini-2.5-flash-preview-tts';
-            }
-            
             updateLimitDisplay();
         });
     }
@@ -2358,9 +2353,9 @@ function loadCurrentSettings() {
         // TTS Servisi
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
-            ttsService.value = localStorage.getItem('ttsService') || 'edge-tts';
-            currentTTSModel = ttsService.value; // Global değişkeni güncelle
-            console.log('🎤 TTS servisi yüklendi:', ttsService.value);
+            currentTTSService = localStorage.getItem('ttsService') || 'edge-tts';
+            ttsService.value = currentTTSService;
+            console.log('🎤 TTS servisi yüklendi:', currentTTSService);
             updateTTSServiceSettings();
         }
 
@@ -2717,10 +2712,8 @@ function saveAllSettings() {
         const ttsService = document.getElementById('tts-service');
         if (ttsService) {
             localStorage.setItem('ttsService', ttsService.value);
-            currentTTSModel = ttsService.value; // Global değişkeni güncelle
-            console.log(`✅ TTS Servisi kaydedildi: ${ttsService.value}`);
-            
-            // TTS servis ayarlarını güncelle
+            currentTTSService = ttsService.value;
+            console.log(`✅ TTS Servisi kaydedildi: ${currentTTSService}`);
             updateTTSServiceSettings();
         }
 
@@ -2848,10 +2841,8 @@ function applySettings() {
 
     // TTS servisi
     const ttsService = localStorage.getItem('ttsService') || 'edge-tts';
-    currentTTSModel = ttsService; // Global değişkeni güncelle
+    currentTTSService = ttsService;
     console.log(`🎤 TTS servisi: ${ttsService}`);
-    
-    // TTS servis ayarlarını güncelle
     updateTTSServiceSettings();
 
     // Karakter teması
@@ -3146,7 +3137,7 @@ function updateLimitPanel() {
     }
     
     if (currentTTS) {
-        currentTTS.textContent = getTTSServiceDisplayName(currentTTSModel);
+        currentTTS.textContent = getTTSServiceDisplayName(currentTTSService, currentTTSModel);
     }
 }
 
@@ -3163,11 +3154,14 @@ function getModelDisplayName(model) {
 }
 
 // TTS service display name'i al
-function getTTSServiceDisplayName(service) {
+function getTTSServiceDisplayName(service, model) {
     const serviceNames = {
         'edge-tts': 'Edge TTS',
-        'gemini-2.5-flash-preview-tts': 'Gemini 2.5 Flash TTS',
-        'gemini-2.0-flash-preview-tts': 'Gemini 2.0 Flash TTS'
+        'gemini-tts': model === 'gemini-2.5-pro-preview-tts'
+            ? 'Gemini 2.5 Pro TTS'
+            : model === 'gemini-2.0-flash-preview-tts'
+                ? 'Gemini 2.0 Flash TTS'
+                : 'Gemini 2.5 Flash TTS'
     };
     return serviceNames[service] || service;
 }
