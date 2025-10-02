@@ -1005,15 +1005,16 @@ async function generateTTS(text) {
             throw new Error(`Unsupported Gemini TTS model: ${currentTTSModel}`);
         }
         
-        // Get selected voice from UI
-        const voiceSelect = document.getElementById('voice-select');
-        const selectedVoice = voiceSelect ? voiceSelect.value : 'alnilam'; // Default to alnilam
-        
+        // Get selected Gemini voice from UI
+        const geminiVoiceSelect = document.getElementById('gemini-voice');
+        const selectedVoice = geminiVoiceSelect?.value || localStorage.getItem('geminiVoice') || 'alnilam';
+
         const payload = {
             contents: [{ 
                 parts: [{ text: text }] 
             }],
             generationConfig: {
+                responseModalities: ["Audio"],
                 responseModalities: ["AUDIO"],
                 speechConfig: {
                     voiceConfig: {
