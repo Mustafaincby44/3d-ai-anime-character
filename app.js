@@ -2130,7 +2130,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // TTS service change
     const ttsServiceSelect = document.getElementById('tts-service');
     if (ttsServiceSelect) {
-        ttsServiceSelect.addEventListener('change', updateTTSServiceSettings);
+        ttsServiceSelect.addEventListener('change', () => {
+            currentTTSService = ttsServiceSelect.value;
+            console.log(`🎤 TTS servisi değiştirildi: ${currentTTSService}`);
+            updateTTSServiceSettings();
+            updateLimitDisplay();
+        });
     }
     
     // Export settings button
@@ -2376,7 +2381,11 @@ function loadCurrentSettings() {
         // Gemini TTS ayarları
         const geminiTtsModel = document.getElementById('gemini-tts-model');
         if (geminiTtsModel) {
-            geminiTtsModel.value = localStorage.getItem('geminiTtsModel') || 'gemini-2.5-flash-preview-tts';
+            const storedGeminiModel = localStorage.getItem('geminiTtsModel');
+            const allowedModels = ['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts', 'gemini-2.0-flash-preview-tts'];
+            const initialModel = allowedModels.includes(storedGeminiModel) ? storedGeminiModel : 'gemini-2.5-flash-preview-tts';
+            geminiTtsModel.value = initialModel;
+            currentTTSModel = initialModel;
         }
 
         const geminiVoice = document.getElementById('gemini-voice');
